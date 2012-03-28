@@ -32,7 +32,8 @@ struct ConcurrentSafeCounter {
 
     void decrement(){
         std::lock_guard<std::mutex> guar(mutex);
-        mutex.unlock();
+        counter.decrement();
+        //mutex.unlock();
     }
 };
 
