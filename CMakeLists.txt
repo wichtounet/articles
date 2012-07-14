@@ -38,3 +38,14 @@ add_executable(threads_p3_recursive2 src/threads/part3/recursive_mutex.cpp)
 add_executable(threads_p3_timed src/threads/part3/timed_mutex.cpp)
 add_executable(threads_p3_call_once src/threads/part3/call_once.cpp)
 add_executable(threads_p3_condition_variables src/threads/part3/condition_variables.cpp)
+
+target_link_libraries(threads_p3_recursive1 rt)
+target_link_libraries(threads_p3_recursive2 rt)
+target_link_libraries(threads_p3_timed rt)
+target_link_libraries(threads_p3_call_once rt)
+target_link_libraries(threads_p3_condition_variables rt)
+
+#Part 4
+add_executable(threads_p4_atomic_counter src/threads/part4/AtomicCounter.cpp)
+
+target_link_libraries(threads_p4_atomic_counter rt)
