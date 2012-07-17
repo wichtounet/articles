@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -std=c++0x -pedantic -Wall -
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
-#Part 1
+#Threads Part 1
 add_executable(threads_p1_hello0 src/threads/part1/Hello0.cpp)
 add_executable(threads_p1_hello1 src/threads/part1/Hello1.cpp)
 add_executable(threads_p1_hello2 src/threads/part1/Hello2.cpp)
@@ -21,7 +21,7 @@ target_link_libraries(threads_p1_hello0 rt)
 target_link_libraries(threads_p1_hello1 rt)
 target_link_libraries(threads_p1_hello2 rt)
 
-#Part 2 
+#Threads Part 2 
 add_executable(threads_p2_counter1 src/threads/part2/Unsafe.cpp)
 add_executable(threads_p2_counter2 src/threads/part2/Safe.cpp)
 add_executable(threads_p2_counter3 src/threads/part2/Exception.cpp)
@@ -32,7 +32,7 @@ target_link_libraries(threads_p2_counter2 rt)
 target_link_libraries(threads_p2_counter3 rt)
 target_link_libraries(threads_p2_counter4 rt)
 
-#Part 3
+#Threads Part 3
 add_executable(threads_p3_recursive1 src/threads/part3/recursive_problem.cpp)
 add_executable(threads_p3_recursive2 src/threads/part3/recursive_mutex.cpp)
 add_executable(threads_p3_timed src/threads/part3/timed_mutex.cpp)
@@ -45,7 +45,13 @@ target_link_libraries(threads_p3_timed rt)
 target_link_libraries(threads_p3_call_once rt)
 target_link_libraries(threads_p3_condition_variables rt)
 
-#Part 4
+#Threads Part 4
 add_executable(threads_p4_atomic_counter src/threads/part4/AtomicCounter.cpp)
 
 target_link_libraries(threads_p4_atomic_counter rt)
+
+#Boost Program Options
+
+add_executable(boost_po_v1 src/boost_po/v1.cpp)
+
+target_link_libraries (boost_po_v1 boost_program_options)
