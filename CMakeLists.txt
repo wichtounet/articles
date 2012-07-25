@@ -8,7 +8,9 @@ set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
 #Activate warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -std=c++0x -pedantic -Wall -Wextra -Wno-long-long")
+set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++0x -pedantic -Wall -Wextra -Wno-long-long")
+set(CMAKE_CXX_FLAGS_DEBUG       "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE     "-pthread -DNDEBUG -Ofast -funroll-loops -fomit-frame-pointer -march=native")
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
