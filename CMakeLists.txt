@@ -50,6 +50,11 @@ add_executable(threads_p4_atomic_counter src/threads/part4/AtomicCounter.cpp)
 
 target_link_libraries(threads_p4_atomic_counter rt)
 
+#Threads Benchmark
+add_executable(threads_bench src/threads/benchmark/bench.cpp)
+
+target_link_libraries(threads_bench rt)
+
 #Boost Program Options
 
 add_executable(boost_po_v1 src/boost_po/v1.cpp)
