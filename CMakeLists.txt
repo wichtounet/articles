@@ -10,7 +10,7 @@ set(VERSION_PATCH 0)
 #Activate warnings
 set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++0x -pedantic -Wall -Wextra -Wno-long-long")
 set(CMAKE_CXX_FLAGS_DEBUG       "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE     "-pthread -DNDEBUG -Ofast -funroll-loops -fomit-frame-pointer -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE     "-pthread -DNDEBUG -Ofast -fomit-frame-pointer -march=native")
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
@@ -56,6 +56,11 @@ target_link_libraries(threads_p4_atomic_counter rt)
 add_executable(threads_bench src/threads/benchmark/bench.cpp)
 
 target_link_libraries(threads_bench rt)
+
+#Linear Time Sorting
+add_executable(linear_bench src/linear_sorting/bench.cpp)
+
+target_link_libraries(linear_bench rt)
 
 #Boost Program Options
 
