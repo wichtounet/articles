@@ -9,7 +9,7 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds milliseconds;
 
 static const std::size_t SIZE = 5000000;
-static const std::size_t MAX =  SIZE - 2;
+static const std::size_t MAX =  SIZE * 10;
 static const std::size_t REPEAT = 25;
 
 static const bool DISPLAY = false;
@@ -63,7 +63,7 @@ void in_place_counting_sort(std::vector<std::size_t>& A){
 
 void counting_sort(std::vector<std::size_t>& A){
     auto B = new std::size_t[SIZE];
-    auto C = new std::size_t[MAX + 1];
+    auto C = new std::size_t[MAX];
 
     for (std::size_t i = 0; i <= MAX; ++i){
         C[i] = 0;
@@ -110,14 +110,12 @@ void binsort(std::vector<std::size_t>& A){
 //For radix sort
 static const std::size_t digits = 2;        //Digits
 static const std::size_t r = 16;            //Bits
-static const std::size_t radix = 1 << r;     //Bins
-static const std::size_t b = 64;
+static const std::size_t radix = 1 << r;    //Bins
 static const std::size_t mask = radix - 1;
-
-static std::size_t cnt[radix];
 
 void radix_sort(std::vector<std::size_t>& A){
     std::size_t* B = new std::size_t[SIZE];
+    std::size_t* cnt = new std::size_t[radix];
     
     for(std::size_t i = 0, shift = 0; i < digits; i++, shift += r){
         for(std::size_t j = 0; j < radix; ++j){
@@ -142,6 +140,7 @@ void radix_sort(std::vector<std::size_t>& A){
     }
 
     delete[] B;
+    delete[] cnt;
 }
 
 template<typename Function>
