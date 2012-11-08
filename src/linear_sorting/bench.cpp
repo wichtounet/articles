@@ -1,4 +1,5 @@
 #include <random>
+#include <array>
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -42,10 +43,7 @@ void std_sort(std::vector<std::size_t>& A){
 }
 
 void in_place_counting_sort(std::vector<std::size_t>& A){
-    auto C = new std::size_t[MAX + 1];
-    for (std::size_t i = 0; i <= MAX; ++i){
-        C[i] = 0;
-    }
+    std::vector<std::size_t> C(MAX + 1);
     
     for (std::size_t i = 0; i < SIZE; ++i){
         ++C[A[i]];
@@ -57,13 +55,11 @@ void in_place_counting_sort(std::vector<std::size_t>& A){
             A[current++] = i;
         }
     }
-
-    delete[] C;
 }
 
 void counting_sort(std::vector<std::size_t>& A){
-    auto B = new std::size_t[SIZE];
-    auto C = new std::size_t[MAX];
+    std::vector<std::size_t> B(SIZE);
+    std::vector<std::size_t> C(MAX);
 
     for (std::size_t i = 0; i <= MAX; ++i){
         C[i] = 0;
@@ -85,13 +81,10 @@ void counting_sort(std::vector<std::size_t>& A){
     for (std::size_t i = 0; i < SIZE; ++i){
         A[i] = B[i];
     }
-
-    delete[] B;
-    delete[] C;
 }
 
 void binsort(std::vector<std::size_t>& A){
-    auto B = new std::vector<std::size_t>[MAX+1];
+    std::vector<std::vector<std::size_t>> B(MAX + 1);
 
     for(std::size_t i = 0; i < SIZE; ++i){
         B[A[i]].push_back(A[i]);
@@ -103,8 +96,6 @@ void binsort(std::vector<std::size_t>& A){
             A[current++] = item;
         }
     }
-
-    delete[] B;
 }
 
 //For radix sort
@@ -114,8 +105,8 @@ static const std::size_t radix = 1 << r;    //Bins
 static const std::size_t mask = radix - 1;
 
 void radix_sort(std::vector<std::size_t>& A){
-    std::size_t* B = new std::size_t[SIZE];
-    std::size_t* cnt = new std::size_t[radix];
+    std::vector<std::size_t> B(SIZE);
+    std::vector<std::size_t> cnt(radix);
     
     for(std::size_t i = 0, shift = 0; i < digits; i++, shift += r){
         for(std::size_t j = 0; j < radix; ++j){
@@ -138,14 +129,11 @@ void radix_sort(std::vector<std::size_t>& A){
            A[j] = B[j]; 
         }
     }
-
-    delete[] B;
-    delete[] cnt;
 }
 
 template<typename Function>
 void bench(Function sort_function){
-    std::vector<std::size_t> vec[REPEAT];
+    std::array<std::vector<std::size_t>, REPEAT> vec;
     
     for(std::size_t i = 0; i < REPEAT; ++i){
         fill_random(vec[i], SIZE);
