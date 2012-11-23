@@ -12,6 +12,8 @@ typedef std::chrono::milliseconds milliseconds;
 
 static const std::size_t REPEAT = 25;
 
+/* Fill back */
+
 template<typename Container>
 void fill_back(std::size_t size){
     Container container;
@@ -26,6 +28,24 @@ void fill_back_vector(std::size_t size){
 
     for(std::size_t i = 0; i < size; ++i){
         container[i] = i;
+    }
+}
+
+/* Fill front  */
+
+void fill_front_list(std::size_t size){
+    std::list<std::size_t> container;
+
+    for(std::size_t i = 0; i < size; ++i){
+        container.push_front(i);
+    }
+}
+
+void fill_front_vector(std::size_t size){
+    std::list<std::size_t> container;
+
+    for(std::size_t i = 0; i < size; ++i){
+        container.insert(container.begin(), i);
     }
 }
 
@@ -47,10 +67,14 @@ void bench(Function function, const std::string& type){
 }
 
 int main(){
-    std::cout << "Fill" << std::endl;
+    std::cout << "Fill back" << std::endl;
     bench(fill_back_vector, "vector_pre");
     bench(fill_back<std::vector<std::size_t>>, "vector");
     bench(fill_back<std::list<std::size_t>>, "list");
+    
+    std::cout << "Fill front" << std::endl;
+    bench(fill_front_vector, "vector");
+    bench(fill_front_list, "list");
 
     return 0;
 }
