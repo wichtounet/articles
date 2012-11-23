@@ -27,6 +27,20 @@ bool operator<(const Small& s1, const Small& s2){
     return s1.a < s2.a;
 }
 
+#define CREATE(name, size)\
+struct name {\
+    std::size_t a = 0;\
+    std::size_t b[size];\
+    name(){}\
+    name(std::size_t a) : a(a){}\
+};\
+bool operator==(const name& s1, const name& s2){ return s1.a == s2.a; }\
+bool operator<(const name& s1, const name& s2){ return s1.a < s2.a; }
+
+CREATE(Medium, 3) //4*8B = 32B
+CREATE(Large, 15) //16*8B = 128B
+CREATE(Huge, 127) //128*8B = 1KB
+
 /* Fill back */
 
 template<typename Container>
@@ -227,6 +241,9 @@ void bench(){
 
 int main(){
     bench<Small>();
+    bench<Medium>();
+    bench<Large>();
+    bench<Huge>();
 
     return 0;
 }
