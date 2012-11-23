@@ -89,6 +89,18 @@ void remove(std::size_t size, Container& container){
     }
 }
 
+/* Sort */
+
+void sort_vector(std::vector<std::size_t>& container){
+    std::sort(container.begin(), container.end());
+}
+
+void sort_list(std::list<std::size_t>& container){
+    container.sort();
+}
+
+/* Bench functions */
+
 template<typename Function>
 void bench(Function function, const std::string& type){
     std::vector<std::size_t> sizes = {1000, 10000, 100000, 1000000/*, 10000000*/};
@@ -129,6 +141,37 @@ void bench_pre(Function function, const std::string& type){
     }
 }
 
+template<typename Container, typename Function>
+void bench_sort(Function function, const std::string& type){
+    std::vector<std::size_t> sizes = {1000, 10000, 100000, 1000000/*, 10000000*/};
+    for(auto size : sizes){
+        std::vector<std::size_t> temp(size);
+
+        for(std::size_t i = 0; i < size; ++i){
+            temp.push_back(i);
+        }
+
+        std::random_shuffle(temp.begin(), temp.end());
+
+        milliseconds ms_tot;
+
+        Container container;
+
+        for(std::size_t i = 0; i < REPEAT; ++i){
+            container.clear();
+            container.insert(container.begin(), temp.begin(), temp.end());
+
+            Clock::time_point t0 = Clock::now();
+            function(container);
+            Clock::time_point t1 = Clock::now();
+            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
+            ms_tot += ms;
+        }
+
+        std::cout << type << ":" << size << ":" << ms_tot.count() << "ms" << std::endl;
+    }
+}
+
 int main(){
     std::cout << "Fill back" << std::endl;
     bench(fill_back_vector, "vector_pre");
@@ -150,6 +193,10 @@ int main(){
     std::cout << "Remove" << std::endl;
     bench_pre<std::vector<std::size_t>>(remove<std::vector<std::size_t>>, "vector");
     bench_pre<std::list<std::size_t>>(remove<std::list<std::size_t>>, "list");
+    
+    std::cout << "Sort" << std::endl;
+    bench_sort<std::vector<std::size_t>>(sort_vector, "vector");
+    bench_sort<std::list<std::size_t>>(sort_list, "list");
 
     return 0;
 }
