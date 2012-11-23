@@ -8,9 +8,9 @@ set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
 #Activate warnings
-set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++0x -pedantic -Wall -Wextra -Wno-long-long")
+set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
 set(CMAKE_CXX_FLAGS_DEBUG       "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE     "-pthread -DNDEBUG -Ofast -fomit-frame-pointer -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE     "-std=c++11 -pthread -DNDEBUG -Ofast -fomit-frame-pointer -march=native")
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
@@ -61,6 +61,11 @@ target_link_libraries(threads_bench rt)
 add_executable(linear_bench src/linear_sorting/bench.cpp)
 
 target_link_libraries(linear_bench rt)
+
+#Vector vs List
+add_executable(vector_list src/vector_list/bench.cpp)
+
+target_link_libraries(vector_list rt)
 
 #Boost Program Options
 
