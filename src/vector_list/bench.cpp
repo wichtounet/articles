@@ -12,6 +12,21 @@ typedef std::chrono::milliseconds milliseconds;
 
 static const std::size_t REPEAT = 1;
 
+struct Small {
+    std::size_t a = 0;
+
+    Small(){}
+    Small(std::size_t a) : a(a){}
+};
+
+bool operator==(const Small& s1, const Small& s2){
+    return s1.a == s2.a;
+}
+
+bool operator<(const Small& s1, const Small& s2){
+    return s1.a < s2.a;
+}
+
 /* Fill back */
 
 template<typename Container>
@@ -19,33 +34,36 @@ void fill_back(std::size_t size){
     Container container;
 
     for(std::size_t i = 0; i < size; ++i){
-        container.push_back(i);
+        container.push_back({i});
     }
 }
 
+template<typename T>
 void fill_back_vector(std::size_t size){
-    std::vector<std::size_t> container(size);
+    std::vector<T> container(size);
 
     for(std::size_t i = 0; i < size; ++i){
-        container[i] = i;
+        container[i] = {i};
     }
 }
 
 /* Fill front  */
 
+template<typename T>
 void fill_front_list(std::size_t size){
-    std::list<std::size_t> container;
+    std::list<T> container;
 
     for(std::size_t i = 0; i < size; ++i){
-        container.push_front(i);
+        container.push_front({i});
     }
 }
 
+template<typename T>
 void fill_front_vector(std::size_t size){
-    std::list<std::size_t> container;
+    std::list<T> container;
 
     for(std::size_t i = 0; i < size; ++i){
-        container.insert(container.begin(), i);
+        container.insert(container.begin(), {i});
     }
 }
 
@@ -57,7 +75,8 @@ void find(std::size_t size, Container& container){
     std::uniform_int_distribution<std::size_t> distribution(0, size);
 
     for(std::size_t i = 0; i < 1000; ++i){
-        std::find(container.begin(), container.end(), distribution(generator));
+        typename Container::value_type v = {distribution(generator)};
+        std::find(container.begin(), container.end(), v);
     }
 }
 
@@ -69,8 +88,9 @@ void insert(std::size_t size, Container& container){
     std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
 
     for(std::size_t i = 0; i < 1000; ++i){
-        auto it = std::find(container.begin(), container.end(), distribution(generator));
-        container.insert(it, size + i);
+        typename Container::value_type v = {distribution(generator)};
+        auto it = std::find(container.begin(), container.end(), v);
+        container.insert(it, {size + i});
     }
 }
 
@@ -82,7 +102,8 @@ void remove(std::size_t size, Container& container){
     std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
 
     for(std::size_t i = 0; i < 1000; ++i){
-        auto it = std::find(container.begin(), container.end(), distribution(generator));
+        typename Container::value_type v = {distribution(generator)};
+        auto it = std::find(container.begin(), container.end(), v);
         if(it != container.end()){
             container.erase(it);
         }
@@ -91,11 +112,13 @@ void remove(std::size_t size, Container& container){
 
 /* Sort */
 
-void sort_vector(std::vector<std::size_t>& container){
+template<typename T>
+void sort_vector(std::vector<T>& container){
     std::sort(container.begin(), container.end());
 }
 
-void sort_list(std::list<std::size_t>& container){
+template<typename T>
+void sort_list(std::list<T>& container){
     container.sort();
 }
 
@@ -125,7 +148,7 @@ void bench_pre(Function function, const std::string& type){
         Container container;
 
         for(std::size_t i = 0; i < size; ++i){
-            container.push_back(i);
+            container.push_back({i});
         }
 
         Clock::time_point t0 = Clock::now();
@@ -145,10 +168,10 @@ template<typename Container, typename Function>
 void bench_sort(Function function, const std::string& type){
     std::vector<std::size_t> sizes = {1000, 10000, 100000, 1000000/*, 10000000*/};
     for(auto size : sizes){
-        std::vector<std::size_t> temp(size);
+        std::vector<typename Container::value_type> temp(size);
 
         for(std::size_t i = 0; i < size; ++i){
-            temp.push_back(i);
+            temp.push_back({i});
         }
 
         std::random_shuffle(temp.begin(), temp.end());
@@ -172,31 +195,38 @@ void bench_sort(Function function, const std::string& type){
     }
 }
 
-int main(){
+template<typename T>
+void bench(){
+    std::cout << "Bench " << sizeof(T) << std::endl;
+
     std::cout << "Fill back" << std::endl;
-    bench(fill_back_vector, "vector_pre");
-    bench(fill_back<std::vector<std::size_t>>, "vector");
-    bench(fill_back<std::list<std::size_t>>, "list");
+    bench(fill_back_vector<T>, "vector_pre");
+    bench(fill_back<std::vector<T>>, "vector");
+    bench(fill_back<std::list<T>>, "list");
     
     std::cout << "Fill front" << std::endl;
-    bench(fill_front_vector, "vector");
-    bench(fill_front_list, "list");
+    bench(fill_front_vector<T>, "vector");
+    bench(fill_front_list<T>, "list");
     
     std::cout << "Find all" << std::endl;
-    bench_pre<std::vector<std::size_t>>(find<std::vector<std::size_t>>, "vector");
-    bench_pre<std::list<std::size_t>>(find<std::list<std::size_t>>, "list");
+    bench_pre<std::vector<T>>(find<std::vector<T>>, "vector");
+    bench_pre<std::list<T>>(find<std::list<T>>, "list");
     
     std::cout << "Insert" << std::endl;
-    bench_pre<std::vector<std::size_t>>(insert<std::vector<std::size_t>>, "vector");
-    bench_pre<std::list<std::size_t>>(insert<std::list<std::size_t>>, "list");
+    bench_pre<std::vector<T>>(insert<std::vector<T>>, "vector");
+    bench_pre<std::list<T>>(insert<std::list<T>>, "list");
     
     std::cout << "Remove" << std::endl;
-    bench_pre<std::vector<std::size_t>>(remove<std::vector<std::size_t>>, "vector");
-    bench_pre<std::list<std::size_t>>(remove<std::list<std::size_t>>, "list");
+    bench_pre<std::vector<T>>(remove<std::vector<T>>, "vector");
+    bench_pre<std::list<T>>(remove<std::list<T>>, "list");
     
     std::cout << "Sort" << std::endl;
-    bench_sort<std::vector<std::size_t>>(sort_vector, "vector");
-    bench_sort<std::list<std::size_t>>(sort_list, "list");
+    bench_sort<std::vector<T>>(sort_vector<T>, "vector");
+    bench_sort<std::list<T>>(sort_list<T>, "list");
+}
+
+int main(){
+    bench<Small>();
 
     return 0;
 }
