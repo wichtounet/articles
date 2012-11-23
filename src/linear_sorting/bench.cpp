@@ -60,10 +60,6 @@ void in_place_counting_sort(std::vector<std::size_t>& A){
 void counting_sort(std::vector<std::size_t>& A){
     std::vector<std::size_t> B(SIZE);
     std::vector<std::size_t> C(MAX);
-
-    for (std::size_t i = 0; i <= MAX; ++i){
-        C[i] = 0;
-    }
     
     for (std::size_t i = 0; i < SIZE; ++i){
         ++C[A[i]];
