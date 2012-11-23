@@ -74,6 +74,21 @@ void insert(std::size_t size, Container& container){
     }
 }
 
+/* Remove */
+
+template<typename Container>
+void remove(std::size_t size, Container& container){
+    std::mt19937 generator;
+    std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
+
+    for(std::size_t i = 0; i < 1000; ++i){
+        auto it = std::find(container.begin(), container.end(), distribution(generator));
+        if(it != container.end()){
+            container.erase(it);
+        }
+    }
+}
+
 template<typename Function>
 void bench(Function function, const std::string& type){
     std::vector<std::size_t> sizes = {1000, 10000, 100000, 1000000/*, 10000000*/};
@@ -131,6 +146,10 @@ int main(){
     std::cout << "Insert" << std::endl;
     bench_pre<std::vector<std::size_t>>(insert<std::vector<std::size_t>>, "vector");
     bench_pre<std::list<std::size_t>>(insert<std::list<std::size_t>>, "list");
+    
+    std::cout << "Remove" << std::endl;
+    bench_pre<std::vector<std::size_t>>(remove<std::vector<std::size_t>>, "vector");
+    bench_pre<std::list<std::size_t>>(remove<std::list<std::size_t>>, "list");
 
     return 0;
 }
