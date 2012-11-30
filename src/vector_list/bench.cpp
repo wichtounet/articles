@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <chrono>
+#include <deque>
 
 //Chrono typedefs
 typedef std::chrono::high_resolution_clock Clock;
@@ -167,6 +168,24 @@ void sort_list(std::list<T>& container){
 }
 
 /* Bench functions */
+
+template<typename Function>
+void bench_crunching(Function function, const std::string& type){
+    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+    for(auto size : sizes){
+        Clock::time_point t0 = Clock::now();
+
+        //Repeat twice
+        for(std::size_t i = 0; i < 2; ++i){
+            function(size);
+        }
+
+        Clock::time_point t1 = Clock::now();
+        milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
+
+        std::cout << type << ":" << size << ":" << (ms.count() / 2) << "ms" << std::endl;
+    }
+}
 
 template<typename Function>
 void bench_small(Function function, const std::string& type){
@@ -351,14 +370,15 @@ void bench(){
 } //end of anonymous namespace
 
 int main(){
-    bench<Small>();
+    /*bench<Small>();
     bench<Medium>();
     bench<Large>();
-    bench<Huge>();
+    bench<Huge>();*/
 
     std::cout << "Random Sorted Insert" << std::endl;
-    bench_small(random_sorted_insert<std::vector<Small>>, "vector");
-    bench_small(random_sorted_insert<std::list<Small>>, "list");
+    bench_crunching(random_sorted_insert<std::vector<Small>>, "vector");
+    bench_crunching(random_sorted_insert<std::list<Small>>, "list");
+    bench_crunching(random_sorted_insert<std::deque<Small>>, "deque");
 
     return 0;
 }
