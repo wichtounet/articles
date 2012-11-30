@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <algorithm>
 
 #include "graphs.hpp"
 
@@ -30,6 +31,10 @@ std::unordered_map<std::string, std::unordered_map<std::string, std::size_t>> co
     return results;
 }
 
+bool numeric_cmp(const std::string& lhs, const std::string& rhs){
+    return atoi(lhs.c_str()) < atoi(rhs.c_str());
+}
+
 void graphs::output(Output output){
     if(output == Output::GOOGLE){
         std::ofstream file("graph.html");
@@ -54,11 +59,17 @@ void graphs::output(Output output){
 
             file << "]," << std::endl;
 
-            std::size_t max = 0;
+            std::vector<std::string> groups;
             for(auto& group : results){
-                file << "['" << group.first << "'";
+                groups.push_back(group.first);
+            }
+            std::sort(groups.begin(), groups.end(), numeric_cmp);
 
-                for(auto& serie : group.second){
+            std::size_t max = 0;
+            for(auto& group_title : groups){
+                file << "['" << group_title << "'";
+
+                for(auto& serie : results[group_title]){
                     file << ", " << serie.second;
                     max = std::max(max, serie.second);
                 }
@@ -68,14 +79,25 @@ void graphs::output(Output output){
 
             file << "]);" << std::endl;
         
-            file << "new google.visualization.LineChart(document.getElementById('visualization'))." 
-                 << "draw(data, " << std::endl 
-                 << "{curveType: \"function\","
+            file << "var graph = new google.visualization.LineChart(document.getElementById('graph_" << graph->name <<"'));" << std::endl
+                 << "var options = {curveType: \"function\","
                  << "title: \"" << graph->title << "\","
+                 << "animation: {duration:1200, easing:\"in\"},"
                  << "width: 600, height: 400,"
                  << "hAxis: {title:\"Number of elements\", slantedText:true},"
-                 << "vAxis: {viewWindow: {min:0}, title:\"" << graph->unit << "\"}}" 
-                 << ");" << std::endl;
+                 << "vAxis: {viewWindow: {min:0}, title:\"" << graph->unit << "\"}}" << std::endl;
+                 << "graph.draw(data, options);" << std::endl;
+
+            file << "var button = document.getElementById('graph_button_" << graph->name << "');" << std::endl
+                 << "button.onclick = function(){" << std::endl
+                 << "if(options.vAxis.logScale){" << std::endl
+                 << "button.value=\"Logarithmic Scale\";" << std::endl
+                 << "} else {" << std::endl
+                 << "button.value=\"Normal scale\";" << std::endl
+                 << "}" << std::endl
+                 << "options.vAxis.logScale=!options.vAxis.logScale;" << std::endl
+                 << "graph.draw(data, options);" << std::endl
+                 << "}" << std::endl;
 
             file << "}" << std::endl;
         }
@@ -83,7 +105,7 @@ void graphs::output(Output output){
         //One function to find them
         file << "function draw_all(){" << std::endl;
         for(auto& graph : all_graphs){
-            file << "draw_" << graph->name << "()" << std::endl;
+            file << "draw_" << graph->name << "();" << std::endl;
         }
         file << "}" << std::endl;
 
@@ -94,7 +116,8 @@ void graphs::output(Output output){
 
         //And in the web page bind them
         for(auto& graph : all_graphs){
-            file << "<div id=\"" << graph->name << "\" style=\"width: 600px; height: 400px;\"></div>" << std::endl;
+            file << "<div id=\"graph_" << graph->name << "\" style=\"width: 600px; height: 400px;\"></div>" << std::endl;
+            file << "<input id=\"graph_button_" << graph->name << "\" type=\"button\" value=\"Logarithmic scale\">" << std::endl;
         }
 
         //...In the land of Google where shadow lies
