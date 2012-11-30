@@ -14,6 +14,9 @@ set(CMAKE_CXX_FLAGS_RELEASE     "-std=c++11 -pthread -DNDEBUG -O2 -fomit-frame-p
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
+# All the headers are in the include directory
+include_directories(include)
+
 #Threads Part 1
 add_executable(threads_p1_hello0 src/threads/part1/Hello0.cpp)
 add_executable(threads_p1_hello1 src/threads/part1/Hello1.cpp)
