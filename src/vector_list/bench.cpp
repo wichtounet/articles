@@ -12,7 +12,7 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds milliseconds;
 typedef std::chrono::microseconds microseconds;
 
-static const std::size_t REPEAT = 25;
+static const std::size_t REPEAT = 19;
 
 namespace {
 
@@ -329,7 +329,7 @@ void bench_sort(Function function, const std::string& type){
             Clock::time_point t0 = Clock::now();
             function(container);
             Clock::time_point t1 = Clock::now();
-            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
+            auto ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
             ms_tot += ms;
         }
 
@@ -337,11 +337,36 @@ void bench_sort(Function function, const std::string& type){
     }
 }
 
+template<typename Container>
+void bench_destruction(const std::string& type){
+    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
+    for(auto size : sizes){
+        microseconds us_tot;
+
+        for(std::size_t i = 0; i < REPEAT; ++i){
+            Container* container = new Container();
+
+            for(std::size_t i = 0; i < size; ++i){
+                container->push_back(i);
+            }
+
+            Clock::time_point t0 = Clock::now();
+            delete container;
+            Clock::time_point t1 = Clock::now();
+            
+            auto us = std::chrono::duration_cast<microseconds>(t1 - t0);
+            us_tot += us;
+        }
+    
+        std::cout << type << ":" << size << ":" << (us_tot.count() / REPEAT) << "us" << std::endl;
+    }
+}
+
 template<typename T>
 void bench(){
     std::cout << "Bench " << sizeof(T) << std::endl;
 
-    std::cout << "Fill back" << std::endl;
+    /*std::cout << "Fill back" << std::endl;
     bench(fill_back_vector<T>, "vector_pre");
     bench(fill_back<std::vector<T>>, "vector");
     bench(fill_back<std::list<T>>, "list");
@@ -364,16 +389,21 @@ void bench(){
     
     std::cout << "Sort" << std::endl;
     bench_sort<std::vector<T>>(sort_vector<T>, "vector");
-    bench_sort<std::list<T>>(sort_list<T>, "list");
+    bench_sort<std::list<T>>(sort_list<T>, "list");*/
+    
+    std::cout << "Destruction" << std::endl;
+    bench_destruction<std::vector<T>>("vector");
+    bench_destruction<std::list<T>>("list");
+    bench_destruction<std::deque<T>>("deque");
 }
 
 } //end of anonymous namespace
 
 int main(){
-    /*bench<Small>();
+    bench<Small>();
     bench<Medium>();
     bench<Large>();
-    bench<Huge>();*/
+    bench<Huge>();
 
     std::cout << "Random Sorted Insert" << std::endl;
     bench_crunching(random_sorted_insert<std::vector<Small>>, "vector");
