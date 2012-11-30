@@ -209,7 +209,7 @@ void bench_small(Function function, const std::string& type){
 
 template<typename Function>
 void bench(Function function, const std::string& type){
-    std::vector<std::size_t> sizes = {1000, 10000, 100000, 1000000};
+    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
     for(auto size : sizes){
         Clock::time_point t0 = Clock::now();
 
@@ -218,9 +218,9 @@ void bench(Function function, const std::string& type){
         }
 
         Clock::time_point t1 = Clock::now();
-        milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
+        auto duration = std::chrono::duration_cast<microseconds>(t1 - t0);
 
-        graphs::new_result(type, std::to_string(size), ms.count());
+        graphs::new_result(type, std::to_string(size), duration.count() / REPEAT);
     }
 }
 
@@ -369,7 +369,7 @@ void bench(){
     std::cout << "Bench " << sizeof(T) << std::endl;
     std::string size_str = std::to_string(sizeof(T));
 
-    graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "ms");
+    graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
 
     bench(fill_back_vector<T>, "vector_pre");
     bench(fill_back<std::vector<T>>, "vector");

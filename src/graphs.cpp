@@ -72,8 +72,8 @@ void graphs::output(Output output){
                  << "draw(data, " << std::endl 
                  << "{curveType: \"function\","
                  << "title: \"" << graph->title << "\","
-                 << "width: 500, height: 400,"
-                 << "hAxis: {title:\"Number of elements\"},"
+                 << "width: 600, height: 400,"
+                 << "hAxis: {title:\"Number of elements\", slantedText:true},"
                  << "vAxis: {viewWindow: {min:0}, title:\"" << graph->unit << "\"}}" 
                  << ");" << std::endl;
 
@@ -94,7 +94,7 @@ void graphs::output(Output output){
 
         //And in the web page bind them
         for(auto& graph : all_graphs){
-            file << "<div id=\"" << graph->name << "\" style=\"width: 500px; height: 400px;\"></div>" << std::endl;
+            file << "<div id=\"" << graph->name << "\" style=\"width: 600px; height: 400px;\"></div>" << std::endl;
         }
 
         //...In the land of Google where shadow lies
