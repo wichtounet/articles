@@ -7,6 +7,8 @@
 #include <chrono>
 #include <deque>
 
+#include "graphs.hpp"
+
 //Chrono typedefs
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds milliseconds;
@@ -218,7 +220,7 @@ void bench(Function function, const std::string& type){
         Clock::time_point t1 = Clock::now();
         milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
 
-        std::cout << type << ":" << size << ":" << ms.count() << "ms" << std::endl;
+        graphs::new_result(type, std::to_string(size), ms.count());
     }
 }
 
@@ -365,13 +367,16 @@ void bench_destruction(const std::string& type){
 template<typename T>
 void bench(){
     std::cout << "Bench " << sizeof(T) << std::endl;
+    std::string size_str = std::to_string(sizeof(T));
 
-    /*std::cout << "Fill back" << std::endl;
+    graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "ms");
+
     bench(fill_back_vector<T>, "vector_pre");
     bench(fill_back<std::vector<T>>, "vector");
     bench(fill_back<std::list<T>>, "list");
+    bench(fill_back<std::deque<T>>, "deque");
     
-    std::cout << "Fill front" << std::endl;
+    /*std::cout << "Fill front" << std::endl;
     bench_small(fill_front_vector<T>, "vector");
     bench_small(fill_front_list<T>, "list");
     
@@ -389,26 +394,28 @@ void bench(){
     
     std::cout << "Sort" << std::endl;
     bench_sort<std::vector<T>>(sort_vector<T>, "vector");
-    bench_sort<std::list<T>>(sort_list<T>, "list");*/
+    bench_sort<std::list<T>>(sort_list<T>, "list");
     
     std::cout << "Destruction" << std::endl;
     bench_destruction<std::vector<T>>("vector");
     bench_destruction<std::list<T>>("list");
-    bench_destruction<std::deque<T>>("deque");
+    bench_destruction<std::deque<T>>("deque");*/
 }
 
 } //end of anonymous namespace
 
 int main(){
     bench<Small>();
-    bench<Medium>();
+    /*bench<Medium>();
     bench<Large>();
     bench<Huge>();
 
     std::cout << "Random Sorted Insert" << std::endl;
     bench_crunching(random_sorted_insert<std::vector<Small>>, "vector");
     bench_crunching(random_sorted_insert<std::list<Small>>, "list");
-    bench_crunching(random_sorted_insert<std::deque<Small>>, "deque");
+    bench_crunching(random_sorted_insert<std::deque<Small>>, "deque");*/
+
+    graphs::output(graphs::Output::GOOGLE);
 
     return 0;
 }
