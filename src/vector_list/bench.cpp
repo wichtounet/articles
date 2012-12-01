@@ -51,7 +51,7 @@ bool operator>=(const name& s1, const name& s2){ return s1.a >= s2.a; }
 CREATE(Medium, 3) //4*8B = 32B
 CREATE(Large, 15) //16*8B = 128B
 CREATE(Huge, 127) //128*8B = 1KB
-CREATE(Monster, 1023) //1024*8B = 8KB
+CREATE(Monster, 511) //512*8B = 4KB
 
 /* Fill back */
 
@@ -398,11 +398,14 @@ void bench(){
     bench_fill_back<std::list<T>>(fill_back<std::list<T>>, "list");
     bench_fill_back<std::deque<T>>(fill_back<std::deque<T>>, "deque");
     
-    graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "ms");
-    
-    bench_fill_front<std::vector<T>>(fill_front_vector<T>, "vector");
-    bench_fill_front<std::list<T>>(fill_front_list<T>, "list");
-    bench_fill_front<std::deque<T>>(fill_front_deque<T>, "deque");
+    //Result are clear enough with very small size
+    if(sizeof(T) == sizeof(long)){
+        graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "ms");
+
+        bench_fill_front<std::vector<T>>(fill_front_vector<T>, "vector");
+        bench_fill_front<std::list<T>>(fill_front_list<T>, "list");
+        bench_fill_front<std::deque<T>>(fill_front_deque<T>, "deque");
+    }
     
     graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte", "us");
     
@@ -438,10 +441,10 @@ void bench(){
 } //end of anonymous namespace
 
 int main(){
-    bench<Small>();
+    /*bench<Small>();
     bench<Medium>();
     bench<Large>();
-    bench<Huge>();
+    bench<Huge>();*/
     bench<Monster>();
     
     graphs::new_graph("number_crunching", "number_crunching", "ms");
