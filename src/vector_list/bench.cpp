@@ -2,10 +2,11 @@
 #include <array>
 #include <vector>
 #include <list>
-#include <iostream>
 #include <algorithm>
-#include <chrono>
 #include <deque>
+#include <thread>
+#include <iostream>
+#include <chrono>
 
 #include "graphs.hpp"
 
@@ -17,6 +18,50 @@ typedef std::chrono::microseconds microseconds;
 static const std::size_t REPEAT = 7;
 
 namespace {
+
+struct NonTrivial {
+    std::size_t a = 0;
+    std::size_t b = 0;
+
+    NonTrivial(){}
+    NonTrivial(std::size_t a) : a(a) {}
+
+    NonTrivial& operator=(const NonTrivial& rhs){
+        double x = sqrt(b * (rhs.a / 3.14 + 73.44 * b / a) / a);
+        double y = sqrt(a * (rhs.b / 73.2198 * rhs.b * rhs.a) / b);
+
+        a = sqrt((x * tanh(x) * log10(x)) / y);
+        b = sqrt((y * y * cos(y) * y) / (sin(x) * x));
+
+        a = rhs.a;
+        b = rhs.b;
+
+        return *this;
+    }
+
+    NonTrivial(const NonTrivial& rhs){
+        double x = sqrt(b * (rhs.a / 3.14 + 73.44 * b / a) / a);
+        double y = sqrt(a * (rhs.b / 73.2198 * rhs.b * rhs.a) / b);
+
+        a = sqrt((x * tanh(x) * log10(x)) / y);
+        b = sqrt((y * y * cos(y) * y) / (sin(x) * x));
+
+        a = rhs.a;
+        b = rhs.b;
+    }
+};
+
+bool operator==(const NonTrivial& s1, const NonTrivial& s2){
+    return s1.a == s2.a;
+}
+
+bool operator<(const NonTrivial& s1, const NonTrivial& s2){
+    return s1.a < s2.a;
+}
+
+bool operator>=(const NonTrivial& s1, const NonTrivial& s2){
+    return s1.a >= s2.a;
+}
 
 struct Small {
     std::size_t a = 0;
@@ -441,11 +486,12 @@ void bench(){
 } //end of anonymous namespace
 
 int main(){
-    /*bench<Small>();
+    bench<Small>();
     bench<Medium>();
     bench<Large>();
-    bench<Huge>();*/
+    bench<Huge>();
     bench<Monster>();
+    bench<NonTrivial>();
     
     graphs::new_graph("number_crunching", "number_crunching", "ms");
 
