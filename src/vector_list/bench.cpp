@@ -51,6 +51,7 @@ bool operator>=(const name& s1, const name& s2){ return s1.a >= s2.a; }
 CREATE(Medium, 3) //4*8B = 32B
 CREATE(Large, 15) //16*8B = 128B
 CREATE(Huge, 127) //128*8B = 1KB
+CREATE(Monster, 1023) //1024*8B = 8KB
 
 /* Fill back */
 
@@ -441,6 +442,7 @@ int main(){
     bench<Medium>();
     bench<Large>();
     bench<Huge>();
+    bench<Monster>();
     
     graphs::new_graph("number_crunching", "number_crunching", "ms");
 
