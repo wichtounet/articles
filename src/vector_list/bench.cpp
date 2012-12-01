@@ -92,12 +92,10 @@ void fill_front_vector(std::size_t size){
     }
 }
 
-/* Random sorted insert */
+/* Number crunching */
 
 template<typename Container>
-void random_sorted_insert(std::size_t size){
-    Container container;
-
+inline void random_sorted_insert(std::size_t size, Container& container){
     std::mt19937 generator;
     std::uniform_int_distribution<std::size_t> distribution(0, std::numeric_limits<std::size_t>::max() - 1);
 
@@ -116,6 +114,32 @@ void random_sorted_insert(std::size_t size){
         }
 
         container.insert(it, v);
+    }
+}
+
+template<typename Container>
+void bench_number_crunching(const std::string& type){
+    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+    for(auto size : sizes){
+        Container container;
+
+        milliseconds ms_tot;
+
+        //Repeat twice
+        for(std::size_t i = 0; i < 2; ++i){
+            Clock::time_point t0 = Clock::now();
+            
+            random_sorted_insert(size, container); 
+            
+            Clock::time_point t1 = Clock::now();
+            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
+            ms_tot += ms;
+
+            //For the next iteration
+            container.clear();
+        }
+
+        std::cout << type << ":" << size << ":" << (ms_tot.count() / 2) << "ms" << std::endl;
     }
 }
 
@@ -170,24 +194,6 @@ void sort_list(std::list<T>& container){
 }
 
 /* Bench functions */
-
-template<typename Function>
-void bench_crunching(Function function, const std::string& type){
-    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-    for(auto size : sizes){
-        Clock::time_point t0 = Clock::now();
-
-        //Repeat twice
-        for(std::size_t i = 0; i < 2; ++i){
-            function(size);
-        }
-
-        Clock::time_point t1 = Clock::now();
-        milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-
-        std::cout << type << ":" << size << ":" << (ms.count() / 2) << "ms" << std::endl;
-    }
-}
 
 template<typename Function>
 void bench_small(Function function, const std::string& type){
@@ -406,14 +412,14 @@ void bench(){
 
 int main(){
     bench<Small>();
-    /*bench<Medium>();
+    bench<Medium>();
     bench<Large>();
     bench<Huge>();
 
     std::cout << "Random Sorted Insert" << std::endl;
-    bench_crunching(random_sorted_insert<std::vector<Small>>, "vector");
-    bench_crunching(random_sorted_insert<std::list<Small>>, "list");
-    bench_crunching(random_sorted_insert<std::deque<Small>>, "deque");*/
+    bench_number_crunching<std::vector<Small>>("vector");
+    bench_number_crunching<std::list<Small>>("list");
+    bench_number_crunching<std::deque<Small>>("deque");
 
     graphs::output(graphs::Output::GOOGLE);
 
