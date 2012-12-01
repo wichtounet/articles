@@ -55,14 +55,14 @@ CREATE(Huge, 127) //128*8B = 1KB
 /* Fill back */
 
 template<typename Container>
-void fill_back(std::size_t size, Container& container){
+inline void fill_back(std::size_t size, Container& container){
     for(std::size_t i = 0; i < size; ++i){
         container.push_back({i});
     }
 }
 
 template<typename T>
-void fill_back_vector(std::size_t size, std::vector<T>& container){
+inline void fill_back_vector(std::size_t size, std::vector<T>& container){
     container.resize(size);
 
     for(std::size_t i = 0; i < size; ++i){
@@ -96,21 +96,21 @@ void bench_fill_back(Function function, const std::string& type){
 /* Fill front  */
 
 template<typename T>
-void fill_front_list(std::size_t size, std::list<T>& container){
+inline void fill_front_list(std::size_t size, std::list<T>& container){
     for(std::size_t i = 0; i < size; ++i){
         container.push_front({i});
     }
 }
 
 template<typename T>
-void fill_front_deque(std::size_t size, std::deque<T>& container){
+inline void fill_front_deque(std::size_t size, std::deque<T>& container){
     for(std::size_t i = 0; i < size; ++i){
         container.push_front({i});
     }
 }
 
 template<typename T>
-void fill_front_vector(std::size_t size, std::vector<T>& container){
+inline void fill_front_vector(std::size_t size, std::vector<T>& container){
     for(std::size_t i = 0; i < size; ++i){
         container.insert(container.begin(), {i});
     }
@@ -229,7 +229,7 @@ void bench_find(const std::string& type){
 /* Insert */
 
 template<typename Container>
-void insert(std::size_t size, Container& container){
+inline void insert(std::size_t size, Container& container){
     std::mt19937 generator;
     std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
 
@@ -270,7 +270,7 @@ void bench_insert(const std::string& type){
 /* Remove */
 
 template<typename Container>
-void remove(Container& container){
+inline void remove(Container& container){
     for(std::size_t i = 0; i < 1000; ++i){
         typename Container::value_type v = {i};
         auto it = std::find(container.begin(), container.end(), v);
@@ -312,17 +312,17 @@ void bench_remove(const std::string& type){
 /* Sort */
 
 template<typename T>
-void sort_vector(std::vector<T>& container){
+inline void sort_vector(std::vector<T>& container){
     std::sort(container.begin(), container.end());
 }
 
 template<typename T>
-void sort_deque(std::deque<T>& container){
+inline void sort_deque(std::deque<T>& container){
     std::sort(container.begin(), container.end());
 }
 
 template<typename T>
-void sort_list(std::list<T>& container){
+inline void sort_list(std::list<T>& container){
     container.sort();
 }
 
@@ -427,7 +427,7 @@ void bench(){
     bench_sort<std::list<T>>(sort_list<T>, "list");
     bench_sort<std::deque<T>>(sort_deque<T>, "deque");
     
-    graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "ms");
+    graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "us");
     
     bench_destruction<std::vector<T>>("vector");
     bench_destruction<std::list<T>>("list");
