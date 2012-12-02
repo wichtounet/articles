@@ -85,7 +85,7 @@ void graphs::output(Output output){
                  << "animation: {duration:1200, easing:\"in\"},"
                  << "width: 600, height: 400,"
                  << "hAxis: {title:\"Number of elements\", slantedText:true},"
-                 << "vAxis: {viewWindow: {min:0}, title:\"" << graph->unit << "\"}}" << std::endl
+                 << "vAxis: {viewWindow: {min:0}, title:\"" << graph->unit << "\"}};" << std::endl
                  << "graph.draw(data, options);" << std::endl;
 
             file << "var button = document.getElementById('graph_button_" << graph->name << "');" << std::endl
@@ -97,7 +97,7 @@ void graphs::output(Output output){
                  << "}" << std::endl
                  << "options.vAxis.logScale=!options.vAxis.logScale;" << std::endl
                  << "graph.draw(data, options);" << std::endl
-                 << "}" << std::endl;
+                 << "};" << std::endl;
 
             file << "}" << std::endl;
         }
