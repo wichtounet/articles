@@ -7,499 +7,373 @@
 #include <thread>
 #include <iostream>
 #include <chrono>
+#include <cstdint>
 
 #include "graphs.hpp"
 
-//Chrono typedefs
-typedef std::chrono::high_resolution_clock Clock;
-typedef std::chrono::milliseconds milliseconds;
-typedef std::chrono::microseconds microseconds;
-
-static const std::size_t REPEAT = 7;
+static const std::size_t REPEAT = 2;
 
 namespace {
+  
+  using std::chrono::milliseconds;
+  using std::chrono::microseconds;
+  using Clock = std::chrono::high_resolution_clock;
 
-struct NonTrivial {
+  struct NonMovable {
+    NonMovable()                                = default;
+    NonMovable(const NonMovable &)              = default;
+    NonMovable &operator=(const NonMovable &)   = default;
+    NonMovable(NonMovable &&)                   = delete;
+    NonMovable &operator=(NonMovable &&)        = delete;
+  };
+  
+  struct Movable {
+    Movable()                                   = default;
+    Movable(const Movable &)                    = default;
+    Movable &operator=(const Movable &)         = default;
+    Movable(Movable &&)                         = default;
+    Movable &operator=(Movable &&)              = default;
+  };
+  
+  struct MovableNoExcept {
+    MovableNoExcept()                                   = default;
+    MovableNoExcept(const MovableNoExcept &)            = default;
+    MovableNoExcept &operator=(const MovableNoExcept &) = default;
+    MovableNoExcept(MovableNoExcept &&) noexcept        = default;
+    MovableNoExcept &operator=(MovableNoExcept &&) noexcept = default;
+  };
+  
+  template<size_t N>
+  struct Trivial {
+    std::size_t a;
+    std::array<unsigned char, N-sizeof(a)> b;
+    bool operator<(const Trivial &other) const { return a < other.a; }
+  };
+
+  // non trivial, quite expensive to copy but easy to move
+  template<class Base = MovableNoExcept>
+  class NonTrivial1 : Base {
+    std::string data{"some pretty long string to make sure it is not optimized with SSO"};
+  public: 
+    std::size_t a{0};
+    NonTrivial1() = default;
+    NonTrivial1(std::size_t a): a(a) {}
+    ~NonTrivial1() = default;
+    bool operator<(const NonTrivial1 &other) const { return a < other.a; }
+  };
+  
+  // non trivial, quite expensive to copy and move
+  template<size_t N, class Base = MovableNoExcept>
+  class NonTrivial2 : Base {
+  public:
     std::size_t a = 0;
-    std::size_t b = 0;
-
-    NonTrivial(){}
-    NonTrivial(std::size_t a) : a(a) {}
-
-    NonTrivial& operator=(const NonTrivial& rhs){
-        double x = sqrt(b * (rhs.a / 3.14 + 73.44 * b / a) / a);
-        double y = sqrt(a * (rhs.b / 73.2198 * rhs.b * rhs.a) / b);
-
-        a = sqrt((x * tanh(x) * log10(x)) / y);
-        b = sqrt((y * y * cos(y) * y) / (sin(x) * x));
-
-        a = rhs.a;
-        b = rhs.b;
-
-        return *this;
+  private:
+    std::array<unsigned char, N-sizeof(a)> b;
+  public:
+    NonTrivial2() = default;
+    NonTrivial2(std::size_t a): a(a) {}
+    ~NonTrivial2() = default;
+    bool operator<(const NonTrivial2 &other) const { return a < other.a; }
+  };
+  
+  // types to benchmark
+  using Small   = Trivial<8>;
+  using Medium  = Trivial<32>;
+  using Large   = Trivial<128>;
+  using Huge    = Trivial<1024>;
+  using Monster = Trivial<4*1024>;
+  using NonTrivial = NonTrivial1<>;
+  
+  // invariants check
+  static_assert(std::is_trivial<Small>::value,   "Expected trivial type");
+  static_assert(std::is_trivial<Medium>::value,  "Expected trivial type");
+  static_assert(std::is_trivial<Large>::value,   "Expected trivial type");
+  static_assert(std::is_trivial<Huge>::value,    "Expected trivial type");
+  static_assert(std::is_trivial<Monster>::value, "Expected trivial type");
+  
+  static_assert(!std::is_trivial<NonTrivial>::value, "Expected non trivial type");
+  
+  
+  // create policies
+  template<class Container>
+  struct Empty {
+    inline static Container make(std::size_t) { return Container(); }
+  };
+   
+  template<class Container>
+  struct Filled {
+    inline static Container make(std::size_t size) { return Container(size); }
+  };
+  
+ template<class Container>
+  struct FilledRandom {
+    static std::vector<size_t> v;
+    inline static Container make(std::size_t size)
+    {
+      // prepare randomized data that will have all the integers from the range
+      if(v.size() != size) {
+        v.clear();
+        v.resize(size);
+        std::iota(begin(v), end(v), 0);
+        std::shuffle(begin(v), end(v), std::mt19937());
+      }
+      
+      // fill with randomized data
+      Container c;
+      for(auto val : v)
+        c.push_back({val});
+      return c;
     }
-
-    NonTrivial(const NonTrivial& rhs){
-        double x = sqrt(b * (rhs.a / 3.14 + 73.44 * b / a) / a);
-        double y = sqrt(a * (rhs.b / 73.2198 * rhs.b * rhs.a) / b);
-
-        a = sqrt((x * tanh(x) * log10(x)) / y);
-        b = sqrt((y * y * cos(y) * y) / (sin(x) * x));
-
-        a = rhs.a;
-        b = rhs.b;
+  };
+  template<class Container> std::vector<size_t> FilledRandom<Container>::v;
+  
+  template<class Container>
+  struct SmartFilled {
+    inline static std::unique_ptr<Container> make(std::size_t size)
+    { return std::unique_ptr<Container>(new Container(size)); }
+  };
+  
+  
+  // testing policies
+  template<class Container>
+  struct NoOp {
+    inline static void run(Container &, std::size_t) {}
+  };
+  
+  template<class Container>
+  struct ReserveSize {
+    inline static void run(Container &c, std::size_t size) { c.reserve(size); }
+  };
+  
+  template<class Container>
+  struct FillBack {
+    static const typename Container::value_type value;
+    inline static void run(Container &c, std::size_t size)
+    { std::fill_n(std::back_inserter(c), size, value); }
+  };
+  template<class Container> const typename Container::value_type FillBack<Container>::value{};
+  
+  template<class Container>
+  struct FillFront {
+    static const typename Container::value_type value;
+    inline static void run(Container &c, std::size_t size)
+    { std::fill_n(std::front_inserter(c), size, value); }
+  };
+  template<class Container> const typename Container::value_type FillFront<Container>::value{};
+  
+  template<class T>
+  struct FillFront<std::vector<T> > {
+    static const T value;
+    inline static void run(std::vector<T> &c, std::size_t size)
+    {
+      for(std::size_t i=0; i<size; ++i)
+        c.insert(begin(c), value);
     }
-};
-
-bool operator==(const NonTrivial& s1, const NonTrivial& s2){
-    return s1.a == s2.a;
-}
-
-bool operator<(const NonTrivial& s1, const NonTrivial& s2){
-    return s1.a < s2.a;
-}
-
-bool operator>=(const NonTrivial& s1, const NonTrivial& s2){
-    return s1.a >= s2.a;
-}
-
-struct Small {
-    std::size_t a = 0;
-
-    Small(){}
-    Small(std::size_t a) : a(a){}
-};
-
-bool operator==(const Small& s1, const Small& s2){
-    return s1.a == s2.a;
-}
-
-bool operator<(const Small& s1, const Small& s2){
-    return s1.a < s2.a;
-}
-
-bool operator>=(const Small& s1, const Small& s2){
-    return s1.a >= s2.a;
-}
-
-#define CREATE(name, size)\
-struct name {\
-    std::size_t a = 0;\
-    std::size_t b[size];\
-    name(){}\
-    name(std::size_t a) : a(a){}\
-};\
-bool operator==(const name& s1, const name& s2){ return s1.a == s2.a; }\
-bool operator<(const name& s1, const name& s2){ return s1.a < s2.a; }\
-bool operator>=(const name& s1, const name& s2){ return s1.a >= s2.a; }
-
-CREATE(Medium, 3) //4*8B = 32B
-CREATE(Large, 15) //16*8B = 128B
-CREATE(Huge, 127) //128*8B = 1KB
-CREATE(Monster, 511) //512*8B = 4KB
-
-/* Fill back */
-
-template<typename Container>
-inline void fill_back(std::size_t size, Container& container){
-    for(std::size_t i = 0; i < size; ++i){
-        container.push_back({i});
+  };
+  template<class T> const T FillFront<std::vector<T> >::value{};
+  
+  template<class Container>
+  struct Find {
+    inline static void run(Container &c, std::size_t size)
+    {
+      for(std::size_t i=0; i<size; ++i) {
+        // hand written comparison to eliminate temporary object creation
+        std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; });
+      }
     }
-}
-
-template<typename T>
-inline void fill_back_vector(std::size_t size, std::vector<T>& container){
-    container.resize(size);
-
-    for(std::size_t i = 0; i < size; ++i){
-        container[i] = {i};
+  };
+  
+  template<class Container>
+  struct Insert {
+    inline static void run(Container &c, std::size_t size)
+    {
+      for(std::size_t i=0; i<1000; ++i) {
+        // hand written comparison to eliminate temporary object creation
+        auto it = std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; });
+        c.insert(it, {size + i});
+      }
     }
-}
-
-template<typename Container, typename Function>
-void bench_fill_back(Function function, const std::string& type){
-    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
-    for(auto size : sizes){
-        Container container;
-
-        microseconds us_tot;
-
-        for(std::size_t i = 0; i < REPEAT; ++i){
-            Clock::time_point t0 = Clock::now();
-            function(size, container);
-            Clock::time_point t1 = Clock::now();
-            auto duration = std::chrono::duration_cast<microseconds>(t1 - t0);
-            us_tot += duration;
-
-            //For the next iteration
-            container.clear();
-        }
-
-        graphs::new_result(type, std::to_string(size), us_tot.count() / REPEAT);
+  };
+  
+  template<class Container>
+  struct Remove {
+    inline static void run(Container &c, std::size_t size)
+    {
+      for(std::size_t i=0; i<1000; ++i) {
+        // hand written comparison to eliminate temporary object creation
+        auto it = std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; });
+        c.erase(it);
+      }
     }
-}
+  };
 
-/* Fill front  */
-
-template<typename T>
-inline void fill_front_list(std::size_t size, std::list<T>& container){
-    for(std::size_t i = 0; i < size; ++i){
-        container.push_front({i});
+  template<class Container>
+  struct Sort {
+    inline static void run(Container &c, std::size_t size)
+    {
+      std::sort(c.begin(), c.end());
     }
-}
-
-template<typename T>
-inline void fill_front_deque(std::size_t size, std::deque<T>& container){
-    for(std::size_t i = 0; i < size; ++i){
-        container.push_front({i});
+  };
+  
+  template<class T>
+  struct Sort<std::list<T> > {
+    inline static void run(std::list<T> &c, std::size_t size)
+    {
+      c.sort();
     }
-}
+  };
 
-template<typename T>
-inline void fill_front_vector(std::size_t size, std::vector<T>& container){
-    for(std::size_t i = 0; i < size; ++i){
-        container.insert(container.begin(), {i});
+  template<class Container>
+  struct SmartDelete {
+    inline static void run(Container &c, std::size_t size) { c.reset(); }
+  };
+
+  template<class Container>
+  struct RandomSortedInsert {
+    static std::mt19937 generator;
+    static std::uniform_int_distribution<std::size_t> distribution;
+    inline static void run(Container &c, std::size_t size)
+    {
+      for(std::size_t i=0; i<size; ++i){
+        auto val = distribution(generator);
+        // hand written comparison to eliminate temporary object creation
+        c.insert(std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a >= val; }), {val});
+      }
     }
-}
-
-template<typename Container, typename Function>
-void bench_fill_front(Function function, const std::string& type){
-    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-    for(auto size : sizes){
-        Container container;
-
-        milliseconds ms_tot;
-
-        //Repeat twice
-        for(std::size_t i = 0; i < 2; ++i){
-            Clock::time_point t0 = Clock::now();
-            function(size, container);
-            Clock::time_point t1 = Clock::now();
-            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-            ms_tot += ms;
-
-            container.clear();
-        }
-
-        graphs::new_result(type, std::to_string(size), ms_tot.count() / 2);
-    }
-}
-
-/* Number crunching */
-
-template<typename Container>
-inline void random_sorted_insert(std::size_t size, Container& container){
-    std::mt19937 generator;
-    std::uniform_int_distribution<std::size_t> distribution(0, std::numeric_limits<std::size_t>::max() - 1);
-
-    for(std::size_t i = 0; i < size; ++i){
-        typename Container::value_type v = {distribution(generator)};
-
-        auto it = container.begin();
-        auto end = container.end();
-
-        while(it != end){
-            if(*it >= v){
-                break;
-            }
-
-            ++it;
-        }
-
-        container.insert(it, v);
-    }
-}
-
-template<typename Container>
-void bench_number_crunching(const std::string& type){
-    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-    for(auto size : sizes){
-        Container container;
-
-        milliseconds ms_tot;
-
-        //Repeat twice
-        for(std::size_t i = 0; i < 2; ++i){
-            Clock::time_point t0 = Clock::now();
-            
-            random_sorted_insert(size, container); 
-            
-            Clock::time_point t1 = Clock::now();
-            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-            ms_tot += ms;
-
-            //For the next iteration
-            container.clear();
-        }
-
-        graphs::new_result(type, std::to_string(size), ms_tot.count() / 2);
-    }
-}
-
-/* Find */
-
-template<typename Container>
-inline void find(std::size_t size, Container& container){
-    for(std::size_t i = 0; i < size; ++i){
-        typename Container::value_type v = {i};
-        std::find(container.begin(), container.end(), v);
-    }
-}
-
-template<typename Container>
-void bench_find(const std::string& type){
-    std::vector<std::size_t> sizes = {1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
-    for(auto size : sizes){
-        Container container;
+  };
+  template<class Container> std::mt19937 RandomSortedInsert<Container>::generator;
+  template<class Container> std::uniform_int_distribution<std::size_t> RandomSortedInsert<Container>::distribution(0, std::numeric_limits<std::size_t>::max() - 1);
+  
+  
+  // variadic policy runner
+  template<class Container>
+  inline static void run(Container &, std::size_t)
+  {
+  }
+  
+  template<template<class> class Test, template<class> class ...Rest, class Container>
+  inline static void run(Container &container, std::size_t size)
+  {
+    Test<Container>::run(container, size);
+    run<Rest...>(container, size);
+  }
+  
+  
+  // test
+  template<typename Container,
+           typename DurationUnit,
+           template<class> class CreatePolicy,
+           template<class> class ...TestPolicy>
+  void bench(const std::string& type, const std::initializer_list<int> &sizes)
+  {
+    // create an element to copy so the temporary creation
+    // and initialization will not be accounted in a benchmark
+    typename Container::value_type value;
+    for(auto size : sizes) {
+      Clock::duration duration;
+      
+      for(std::size_t i=0; i<REPEAT; ++i) {
+        auto container = CreatePolicy<Container>::make(size);
         
-        std::mt19937 generator;
-        std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
-
-        for(std::size_t i = 0; i < size; ++i){
-            container.push_back({distribution(generator)});
-        }
-
         Clock::time_point t0 = Clock::now();
-
-        for(std::size_t i = 0; i < REPEAT; ++i){
-            find<Container>(size, container);
-        }
-
+        
+        // run test
+        run<TestPolicy...>(container, size);
+        
         Clock::time_point t1 = Clock::now();
-        auto d = std::chrono::duration_cast<microseconds>(t1 - t0);
-
-        graphs::new_result(type, std::to_string(size), d.count() / REPEAT);
+        duration += t1 - t0;
+      }
+      
+      graphs::new_result(type, std::to_string(size),
+                         std::chrono::duration_cast<DurationUnit>(duration).count() / REPEAT);
     }
-}
-
-/* Insert */
-
-template<typename Container>
-inline void insert(std::size_t size, Container& container){
-    std::mt19937 generator;
-    std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
-
-    for(std::size_t i = 0; i < 1000; ++i){
-        typename Container::value_type v = {distribution(generator)};
-        auto it = std::find(container.begin(), container.end(), v);
-        container.insert(it, {size + i});
-    }
-}
-
-template<typename Container>
-void bench_insert(const std::string& type){
-    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-    for(auto size : sizes){
-        std::vector<typename Container::value_type> temp;
-
-        for(std::size_t i = 0; i < size; ++i){
-            temp.push_back({i});
-        }
-
-        std::random_shuffle(temp.begin(), temp.end());
-
-        Container container(temp.begin(), temp.end());
-
-        Clock::time_point t0 = Clock::now();
-
-        for(std::size_t i = 0; i < REPEAT; ++i){
-            insert<Container>(size, container);
-        }
-
-        Clock::time_point t1 = Clock::now();
-        auto d = std::chrono::duration_cast<milliseconds>(t1 - t0);
-
-        graphs::new_result(type, std::to_string(size), d.count() / REPEAT);
-    }
-}
-
-/* Remove */
-
-template<typename Container>
-inline void remove(Container& container){
-    for(std::size_t i = 0; i < 1000; ++i){
-        typename Container::value_type v = {i};
-        auto it = std::find(container.begin(), container.end(), v);
-        container.erase(it);
-    }
-}
-
-template<typename Container>
-void bench_remove(const std::string& type){
-    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-    for(auto size : sizes){
-        std::vector<typename Container::value_type> temp;
-
-        for(std::size_t i = 0; i < size; ++i){
-            temp.push_back({i});
-        }
-
-        std::random_shuffle(temp.begin(), temp.end());
-
-        milliseconds ms_tot;
-
-        Container container;
-
-        for(std::size_t i = 0; i < REPEAT; ++i){
-            container.clear();
-            container.insert(container.begin(), temp.begin(), temp.end());
-
-            Clock::time_point t0 = Clock::now();
-            remove<Container>(container);
-            Clock::time_point t1 = Clock::now();
-            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-            ms_tot += ms;
-        }
-
-        graphs::new_result(type, std::to_string(size), ms_tot.count() / REPEAT);
-    }
-}
-
-/* Sort */
-
-template<typename T>
-inline void sort_vector(std::vector<T>& container){
-    std::sort(container.begin(), container.end());
-}
-
-template<typename T>
-inline void sort_deque(std::deque<T>& container){
-    std::sort(container.begin(), container.end());
-}
-
-template<typename T>
-inline void sort_list(std::list<T>& container){
-    container.sort();
-}
-
-template<typename Container, typename Function>
-void bench_sort(Function function, const std::string& type){
-    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
-    for(auto size : sizes){
-        std::vector<typename Container::value_type> temp;
-
-        for(std::size_t i = 0; i < size; ++i){
-            temp.push_back({i});
-        }
-
-        std::random_shuffle(temp.begin(), temp.end());
-
-        milliseconds ms_tot;
-
-        Container container;
-
-        for(std::size_t i = 0; i < REPEAT; ++i){
-            container.clear();
-            container.insert(container.begin(), temp.begin(), temp.end());
-
-            Clock::time_point t0 = Clock::now();
-            function(container);
-            Clock::time_point t1 = Clock::now();
-            auto ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-            ms_tot += ms;
-        }
-
-        graphs::new_result(type, std::to_string(size), ms_tot.count() / REPEAT);
-    }
-}
-
-/* Destruction */
-
-template<typename Container>
-void bench_destruction(const std::string& type){
-    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
-    for(auto size : sizes){
-        microseconds us_tot;
-
-        for(std::size_t i = 0; i < REPEAT; ++i){
-            Container* container = new Container();
-
-            for(std::size_t i = 0; i < size; ++i){
-                container->push_back(i);
-            }
-
-            Clock::time_point t0 = Clock::now();
-            delete container;
-            Clock::time_point t1 = Clock::now();
-            
-            auto us = std::chrono::duration_cast<microseconds>(t1 - t0);
-            us_tot += us;
-        }
-    
-        graphs::new_result(type, std::to_string(size), us_tot.count() / REPEAT);
-    }
-}
-
-/* Launch benchmarks on different sizes */
-
-template<typename T>
-void bench(){
+  }
+  
+  
+  // Launch benchmarks on different sizes
+  template<typename T>
+  void bench()
+  {
     std::string size_str = std::to_string(sizeof(T));
-
-    graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
-
-    bench_fill_back<std::vector<T>>(fill_back_vector<T>, "vector_pre");
-    bench_fill_back<std::vector<T>>(fill_back<std::vector<T>>, "vector");
-    bench_fill_back<std::list<T>>(fill_back<std::list<T>>, "list");
-    bench_fill_back<std::deque<T>>(fill_back<std::deque<T>>, "deque");
     
-    //Result are clear enough with very small size
-    if(sizeof(T) == sizeof(long)){
-        graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "ms");
-
-        bench_fill_front<std::vector<T>>(fill_front_vector<T>, "vector");
-        bench_fill_front<std::list<T>>(fill_front_list<T>, "list");
-        bench_fill_front<std::deque<T>>(fill_front_deque<T>, "deque");
+    {
+      graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
+      auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
+      bench<std::vector<T>, microseconds, Empty, ReserveSize, FillBack>("vector_pre", sizes);
+      bench<std::vector<T>, microseconds, Empty, FillBack>("vector", sizes);
+      bench<std::list<T>,   microseconds, Empty, FillBack>("list",   sizes);
+      bench<std::deque<T>,  microseconds, Empty, FillBack>("deque",  sizes);
     }
-    
-    graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte", "us");
-    
-    bench_find<std::vector<T>>("vector");
-    bench_find<std::list<T>>("list");
-    bench_find<std::deque<T>>("deque");
-    
-    graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte", "ms");
-    
-    bench_insert<std::vector<T>>("vector");
-    bench_insert<std::list<T>>("list");
-    bench_insert<std::deque<T>>("deque");
-    
-    graphs::new_graph("random_remove_" + size_str, "random_remove - "  + size_str + " byte", "ms");
-    
-    bench_remove<std::vector<T>>("vector");
-    bench_remove<std::list<T>>("list");
-    bench_remove<std::deque<T>>("deque");
-    
-    graphs::new_graph("sort_" + size_str, "sort - "  + size_str + " byte", "ms");
+  
+    //Result are clear enough with very small size
+    if(sizeof(T) == sizeof(Small)) {
+      graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "ms");
+      auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
+      bench<std::vector<T>, milliseconds, Empty, FillFront>("vector", sizes);
+      bench<std::list<T>,   milliseconds, Empty, FillFront>("list",   sizes);
+      bench<std::deque<T>,  milliseconds, Empty, FillFront>("deque",  sizes);
+    }
+  
+    {
+      graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte", "us");
+      auto sizes = {1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
+      bench<std::vector<T>, microseconds, FilledRandom, Find>("vector", sizes);
+      bench<std::list<T>,   microseconds, FilledRandom, Find>("list",   sizes);
+      bench<std::deque<T>,  microseconds, FilledRandom, Find>("deque",  sizes);
+    }
 
-    bench_sort<std::vector<T>>(sort_vector<T>, "vector");
-    bench_sort<std::list<T>>(sort_list<T>, "list");
-    bench_sort<std::deque<T>>(sort_deque<T>, "deque");
-    
-    graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "us");
-    
-    bench_destruction<std::vector<T>>("vector");
-    bench_destruction<std::list<T>>("list");
-    bench_destruction<std::deque<T>>("deque");
-}
+    {
+      graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte", "ms");
+      auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+      bench<std::vector<T>, milliseconds, FilledRandom, Insert>("vector", sizes);
+      bench<std::list<T>,   milliseconds, FilledRandom, Insert>("list",   sizes);
+      bench<std::deque<T>,  milliseconds, FilledRandom, Insert>("deque",  sizes);
+    }
+  
+    {
+      graphs::new_graph("random_remove_" + size_str, "random_remove - "  + size_str + " byte", "ms");
+      auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+      bench<std::vector<T>, milliseconds, FilledRandom, Remove>("vector", sizes);
+      bench<std::list<T>,   milliseconds, FilledRandom, Remove>("list",   sizes);
+      bench<std::deque<T>,  milliseconds, FilledRandom, Remove>("deque",  sizes);
+    }
+  
+    {
+      graphs::new_graph("sort_" + size_str, "sort - "  + size_str + " byte", "ms");
+      auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
+      bench<std::vector<T>, milliseconds, FilledRandom, Sort>("vector", sizes);
+      bench<std::list<T>,   milliseconds, FilledRandom, Sort>("list",   sizes);
+      bench<std::deque<T>,  milliseconds, FilledRandom, Sort>("deque",  sizes);
+    }
+  
+    {
+      graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "us");
+      auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
+      bench<std::vector<T>, microseconds, SmartFilled, SmartDelete>("vector", sizes);
+      bench<std::list<T>,   microseconds, SmartFilled, SmartDelete>("list",   sizes);
+      bench<std::deque<T>,  microseconds, SmartFilled, SmartDelete>("deque",  sizes);
+    }
+
+    //Result are clear enough with very small size
+    if(sizeof(T) == sizeof(Small)) {
+      graphs::new_graph("number_crunching", "number_crunching", "ms");
+      auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+      bench<std::vector<T>, milliseconds, Empty, RandomSortedInsert>("vector", sizes);
+      bench<std::list<T>,   milliseconds, Empty, RandomSortedInsert>("list",   sizes);
+      bench<std::deque<T>,  milliseconds, Empty, RandomSortedInsert>("deque",  sizes);
+    }
+  }
 
 } //end of anonymous namespace
 
-int main(){
-    bench<Small>();
-    bench<Medium>();
-    bench<Large>();
-    bench<Huge>();
-    bench<Monster>();
-    bench<NonTrivial>();
-    
-    graphs::new_graph("number_crunching", "number_crunching", "ms");
 
-    bench_number_crunching<std::vector<Small>>("vector");
-    bench_number_crunching<std::list<Small>>("list");
-    bench_number_crunching<std::deque<Small>>("deque");
-
-    graphs::output(graphs::Output::GOOGLE);
-
-    return 0;
+int main()
+{
+  bench<Small>();
+  bench<Medium>();
+  bench<Large>();
+  bench<Huge>();
+  bench<Monster>();
+  bench<NonTrivial>();
+  graphs::output(graphs::Output::GOOGLE);
 }
