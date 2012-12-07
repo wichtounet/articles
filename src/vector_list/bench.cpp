@@ -425,6 +425,9 @@ int main()
   bench<Large>();
   bench<Huge>();
   bench<Monster>();
-  bench<NonTrivial>();
+  bench<NonTrivial1<MovableNoExcept> >();
+  bench<NonTrivial1<Movable> >();
+  bench<NonTrivial1<NonMovable> >();
+  bench<NonTrivial2<32> >();
   graphs::output(graphs::Output::GOOGLE);
 }
