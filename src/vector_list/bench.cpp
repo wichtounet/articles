@@ -50,6 +50,12 @@ namespace {
     bool operator<(const Trivial &other) const { return a < other.a; }
   };
 
+  template<>
+  struct Trivial<sizeof(std::size_t)> {
+    std::size_t a;
+    bool operator<(const Trivial &other) const { return a < other.a; }
+  };
+
   // non trivial, quite expensive to copy but easy to move
   template<class Base = MovableNoExcept>
   class NonTrivial1 : Base {
@@ -77,11 +83,11 @@ namespace {
   };
   
   // types to benchmark
-  using Small   = Trivial<8>;
-  using Medium  = Trivial<32>;
-  using Large   = Trivial<128>;
-  using Huge    = Trivial<1024>;
-  using Monster = Trivial<4*1024>;
+  using Small   = Trivial<8>;         static_assert(sizeof(Small)   == 8,      "Invalid size");
+  using Medium  = Trivial<32>;        static_assert(sizeof(Medium)  == 32,     "Invalid size");
+  using Large   = Trivial<128>;       static_assert(sizeof(Large)   == 128,    "Invalid size");
+  using Huge    = Trivial<1024>;      static_assert(sizeof(Huge)    == 1024,   "Invalid size");
+  using Monster = Trivial<4*1024>;    static_assert(sizeof(Monster) == 4*1024, "Invalid size");
   using NonTrivial = NonTrivial1<>;
   
   // invariants check
