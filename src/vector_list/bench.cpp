@@ -8,10 +8,11 @@
 #include <iostream>
 #include <chrono>
 #include <cstdint>
+#include <typeinfo>
 
 #include "graphs.hpp"
 
-static const std::size_t REPEAT = 2;
+static const std::size_t REPEAT = 5;
 
 namespace {
   
@@ -331,7 +332,7 @@ namespace {
     std::string size_str = std::to_string(sizeof(T));
     
     {
-      graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
+      graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte " + std::string(typeid(T).name()), "us");
       auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
       bench<std::vector<T>, microseconds, Empty, ReserveSize, FillBack>("vector_pre", sizes);
       bench<std::vector<T>, microseconds, Empty, FillBack>("vector", sizes);
@@ -340,7 +341,7 @@ namespace {
     }
   
     {
-      graphs::new_graph("emplace_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
+      graphs::new_graph("emplace_back_" + size_str, "fill_back - "  + size_str + " byte " + std::string(typeid(T).name()), "us");
       auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
       bench<std::vector<T>, microseconds, Empty, EmplaceBack>("vector", sizes);
       bench<std::list<T>,   microseconds, Empty, EmplaceBack>("list",   sizes);
@@ -349,7 +350,7 @@ namespace {
   
     //Result are clear enough with very small size
     if(sizeof(T) == sizeof(Small)) {
-      graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "us");
+      graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte " + std::string(typeid(T).name()), "us");
       auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
       bench<std::vector<T>, microseconds, Empty, FillFront>("vector", sizes);
       bench<std::list<T>,   microseconds, Empty, FillFront>("list",   sizes);
@@ -357,7 +358,7 @@ namespace {
     }
   
     if(sizeof(T) == sizeof(Small)) {
-      graphs::new_graph("emplace_front_" + size_str, "emplace_front - "  + size_str + " byte", "us");
+      graphs::new_graph("emplace_front_" + size_str, "emplace_front - "  + size_str + " byte " + std::string(typeid(T).name()), "us");
       auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
       bench<std::vector<T>, microseconds, Empty, EmplaceFront>("vector", sizes);
       bench<std::list<T>,   microseconds, Empty, EmplaceFront>("list",   sizes);
@@ -365,7 +366,7 @@ namespace {
     }
     
     {
-      graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte", "us");
+      graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte " + std::string(typeid(T).name()), "us");
       auto sizes = {1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
       bench<std::vector<T>, microseconds, FilledRandom, Find>("vector", sizes);
       bench<std::list<T>,   microseconds, FilledRandom, Find>("list",   sizes);
@@ -373,7 +374,7 @@ namespace {
     }
     
     {
-      graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte", "ms");
+      graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte " + std::string(typeid(T).name()), "ms");
       auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
       bench<std::vector<T>, milliseconds, FilledRandom, Insert>("vector", sizes);
       bench<std::list<T>,   milliseconds, FilledRandom, Insert>("list",   sizes);
@@ -381,7 +382,7 @@ namespace {
     }
   
     {
-      graphs::new_graph("random_remove_" + size_str, "random_remove - "  + size_str + " byte", "ms");
+      graphs::new_graph("random_remove_" + size_str, "random_remove - "  + size_str + " byte " + std::string(typeid(T).name()), "ms");
       auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
       bench<std::vector<T>, milliseconds, FilledRandom, Erase>("vector", sizes);
       bench<std::vector<T>, milliseconds, FilledRandom, RemoveErase>("vector_rem", sizes);
@@ -390,7 +391,7 @@ namespace {
     }
   
     {
-      graphs::new_graph("sort_" + size_str, "sort - "  + size_str + " byte", "ms");
+      graphs::new_graph("sort_" + size_str, "sort - "  + size_str + " byte " + std::string(typeid(T).name()), "ms");
       auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
       bench<std::vector<T>, milliseconds, FilledRandom, Sort>("vector", sizes);
       bench<std::list<T>,   milliseconds, FilledRandom, Sort>("list",   sizes);
@@ -398,7 +399,7 @@ namespace {
     }
   
     {
-      graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "us");
+      graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte " + std::string(typeid(T).name()), "us");
       auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
       bench<std::vector<T>, microseconds, SmartFilled, SmartDelete>("vector", sizes);
       bench<std::list<T>,   microseconds, SmartFilled, SmartDelete>("list",   sizes);
@@ -407,7 +408,7 @@ namespace {
 
     //Result are clear enough with very small size
     if(sizeof(T) == sizeof(Small)) {
-      graphs::new_graph("number_crunching", "number_crunching", "ms");
+      graphs::new_graph("number_crunching", "number_crunching " + std::string(typeid(T).name()), "ms");
       auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
       bench<std::vector<T>, milliseconds, Empty, RandomSortedInsert>("vector", sizes);
       bench<std::list<T>,   milliseconds, Empty, RandomSortedInsert>("list",   sizes);
