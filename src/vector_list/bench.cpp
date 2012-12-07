@@ -202,17 +202,27 @@ namespace {
   };
   
   template<class Container>
-  struct Remove {
+  struct Erase {
     inline static void run(Container &c, std::size_t size)
     {
       for(std::size_t i=0; i<1000; ++i) {
         // hand written comparison to eliminate temporary object creation
-        auto it = std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; });
-        c.erase(it);
+        c.erase(std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; }));
       }
     }
   };
-
+  
+  template<class Container>
+  struct RemoveErase {
+    inline static void run(Container &c, std::size_t size)
+    {
+      for(std::size_t i=0; i<1000; ++i) {
+        // hand written comparison to eliminate temporary object creation
+        c.erase(std::remove_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; }), end(c));
+      }
+    }
+  };
+  
   template<class Container>
   struct Sort {
     inline static void run(Container &c, std::size_t size)
@@ -339,9 +349,10 @@ namespace {
     {
       graphs::new_graph("random_remove_" + size_str, "random_remove - "  + size_str + " byte", "ms");
       auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-      bench<std::vector<T>, milliseconds, FilledRandom, Remove>("vector", sizes);
-      bench<std::list<T>,   milliseconds, FilledRandom, Remove>("list",   sizes);
-      bench<std::deque<T>,  milliseconds, FilledRandom, Remove>("deque",  sizes);
+      bench<std::vector<T>, milliseconds, FilledRandom, Erase>("vector", sizes);
+      bench<std::vector<T>, milliseconds, FilledRandom, RemoveErase>("vector_rem", sizes);
+      bench<std::list<T>,   milliseconds, FilledRandom, Erase>("list",   sizes);
+      bench<std::deque<T>,  milliseconds, FilledRandom, Erase>("deque",  sizes);
     }
   
     {
