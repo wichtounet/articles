@@ -323,11 +323,11 @@ namespace {
   
     //Result are clear enough with very small size
     if(sizeof(T) == sizeof(Small)) {
-      graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "ms");
+      graphs::new_graph("fill_front_" + size_str, "fill_front - "  + size_str + " byte", "us");
       auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
-      bench<std::vector<T>, milliseconds, Empty, FillFront>("vector", sizes);
-      bench<std::list<T>,   milliseconds, Empty, FillFront>("list",   sizes);
-      bench<std::deque<T>,  milliseconds, Empty, FillFront>("deque",  sizes);
+      bench<std::vector<T>, microseconds, Empty, FillFront>("vector", sizes);
+      bench<std::list<T>,   microseconds, Empty, FillFront>("list",   sizes);
+      bench<std::deque<T>,  microseconds, Empty, FillFront>("deque",  sizes);
     }
   
     {
