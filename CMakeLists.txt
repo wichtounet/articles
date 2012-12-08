@@ -70,6 +70,9 @@ add_executable(vector_list src/vector_list/bench.cpp src/graphs.cpp)
 
 target_link_libraries(vector_list rt)
 
+#List Vs Boost Intrusive List
+add_executable(intrusive_list src/intrusive_list/bench.cpp src/graphs.cpp)
+
 #Boost Program Options
 
 add_executable(boost_po_v1 src/boost_po/v1.cpp)
