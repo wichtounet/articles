@@ -97,10 +97,9 @@ namespace {
 }
 
 
-using std::chrono::milliseconds;
-using std::chrono::microseconds;
-using Clock = std::chrono::high_resolution_clock;
+// tested types
 
+// trivial type with parametrized size
 template<int N>
 struct Trivial {
   std::size_t a;
@@ -369,12 +368,17 @@ inline static void run(Container &container, std::size_t size)
   
   
 // test
+
 template<typename Container,
          typename DurationUnit,
          template<class> class CreatePolicy,
          template<class> class ...TestPolicy>
 void bench(const std::string& type, const std::initializer_list<int> &sizes)
 {
+  using std::chrono::milliseconds;
+  using std::chrono::microseconds;
+  using Clock = std::chrono::high_resolution_clock;
+
   // create an element to copy so the temporary creation
   // and initialization will not be accounted in a benchmark
   typename Container::value_type value;
@@ -403,6 +407,9 @@ void bench(const std::string& type, const std::initializer_list<int> &sizes)
 template<typename T>
 void bench()
 {
+  using std::chrono::milliseconds;
+  using std::chrono::microseconds;
+  
   {
     new_graph<T>("fill_back", "us");
     auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
