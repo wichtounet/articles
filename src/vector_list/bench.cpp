@@ -60,6 +60,40 @@ namespace {
     graphs::new_graph(tag(title), title, unit);
   }
   
+  template<typename T>
+  constexpr bool is_trivial_of_size(std::size_t size)
+  { return std::is_trivial<T>::value && sizeof(T) == size; }
+  
+  template<typename T>
+  constexpr bool is_non_trivial_nothrow_movable()
+  { return !std::is_trivial<T>::value &&
+      std::is_nothrow_move_constructible<T>::value &&
+      std::is_nothrow_move_assignable<T>::value; }
+  
+  template<typename T>
+  constexpr bool is_non_trivial_non_nothrow_movable()
+  { return !std::is_trivial<T>::value  &&
+      std::is_move_constructible<T>::value &&
+      std::is_move_assignable<T>::value &&
+      !std::is_nothrow_move_constructible<T>::value &&
+      !std::is_nothrow_move_assignable<T>::value; }
+  
+  template<typename T>
+  constexpr bool is_non_trivial_non_movable()
+  { return !std::is_trivial<T>::value  &&
+      std::is_copy_constructible<T>::value &&
+      std::is_copy_assignable<T>::value &&
+      !std::is_move_constructible<T>::value &&
+      !std::is_move_assignable<T>::value; }
+  
+  template<typename T>
+  constexpr bool is_non_trivial_of_size(std::size_t size)
+  { return !std::is_trivial<T>::value && sizeof(T) == size &&
+      std::is_copy_constructible<T>::value &&
+      std::is_copy_assignable<T>::value &&
+      std::is_move_constructible<T>::value &&
+      std::is_move_assignable<T>::value; }
+
 }
 
 
@@ -67,31 +101,6 @@ using std::chrono::milliseconds;
 using std::chrono::microseconds;
 using Clock = std::chrono::high_resolution_clock;
 
-
-struct NonMovable {
-  NonMovable()                                = default;
-  NonMovable(const NonMovable &)              = default;
-  NonMovable &operator=(const NonMovable &)   = default;
-  NonMovable(NonMovable &&)                   = delete;
-  NonMovable &operator=(NonMovable &&)        = delete;
-};
-  
-struct Movable {
-  Movable()                                   = default;
-  Movable(const Movable &)                    = default;
-  Movable &operator=(const Movable &)         = default;
-  Movable(Movable &&)                         = default;
-  Movable &operator=(Movable &&)              = default;
-};
-  
-struct MovableNoExcept {
-  MovableNoExcept()                                   = default;
-  MovableNoExcept(const MovableNoExcept &)            = default;
-  MovableNoExcept &operator=(const MovableNoExcept &) = default;
-  MovableNoExcept(MovableNoExcept &&) noexcept        = default;
-  MovableNoExcept &operator=(MovableNoExcept &&) noexcept = default;
-};
-  
 template<int N>
 struct Trivial {
   std::size_t a;
@@ -105,9 +114,8 @@ struct Trivial<sizeof(std::size_t)> {
   bool operator<(const Trivial &other) const { return a < other.a; }
 };
 
-// non trivial, quite expensive to copy but easy to move
-template<class Base = MovableNoExcept>
-class NonTrivialString : Base {
+// non trivial, quite expensive to copy but easy to move (noexcept not set)
+class NonTrivialString {
   std::string data{"some pretty long string to make sure it is not optimized with SSO"};
 public: 
   std::size_t a{0};
@@ -115,6 +123,27 @@ public:
   NonTrivialString(std::size_t a): a(a) {}
   ~NonTrivialString() = default;
   bool operator<(const NonTrivialString &other) const { return a < other.a; }
+};
+  
+// non trivial, quite expensive to copy but easy to move (with noexcept)
+class NonTrivialStringNoExcept {
+  std::string data{"some pretty long string to make sure it is not optimized with SSO"};
+public: 
+  std::size_t a{0};
+  NonTrivialStringNoExcept() = default;
+  NonTrivialStringNoExcept(std::size_t a): a(a) {}
+  NonTrivialStringNoExcept(const NonTrivialStringNoExcept &) = default;
+  NonTrivialStringNoExcept(NonTrivialStringNoExcept &&) noexcept = default;
+  ~NonTrivialStringNoExcept() = default;
+  NonTrivialStringNoExcept &operator=(const NonTrivialStringNoExcept &) = default;
+  NonTrivialStringNoExcept &operator=(NonTrivialStringNoExcept &&other) noexcept
+  {
+    using namespace std;
+    swap(data, other.data);
+    swap(a, other.a);
+    return *this;
+  }
+  bool operator<(const NonTrivialStringNoExcept &other) const { return a < other.a; }
 };
   
 // non trivial, quite expensive to copy and move
@@ -130,24 +159,21 @@ public:
   ~NonTrivialArray() = default;
   bool operator<(const NonTrivialArray &other) const { return a < other.a; }
 };
-  
-// types to benchmark
-using Small   = Trivial<8>;         static_assert(sizeof(Small)   == 8,      "Invalid size");
-using Medium  = Trivial<32>;        static_assert(sizeof(Medium)  == 32,     "Invalid size");
-using Large   = Trivial<128>;       static_assert(sizeof(Large)   == 128,    "Invalid size");
-using Huge    = Trivial<1024>;      static_assert(sizeof(Huge)    == 1024,   "Invalid size");
-using Monster = Trivial<4*1024>;    static_assert(sizeof(Monster) == 4*1024, "Invalid size");
-  
-// invariants check
-static_assert(std::is_trivial<Small>::value,   "Expected trivial type");
-static_assert(std::is_trivial<Medium>::value,  "Expected trivial type");
-static_assert(std::is_trivial<Large>::value,   "Expected trivial type");
-static_assert(std::is_trivial<Huge>::value,    "Expected trivial type");
-static_assert(std::is_trivial<Monster>::value, "Expected trivial type");
-  
-static_assert(!std::is_trivial<NonTrivialString<> >::value, "Expected non trivial type");
-static_assert(!std::is_trivial<NonTrivialArray<32> >::value, "Expected non trivial type");
-  
+
+
+// type definitions for testing and invariants check
+using TrivialSmall   = Trivial<8>;       static_assert(is_trivial_of_size<TrivialSmall>(8),        "Invalid type");
+using TrivialMedium  = Trivial<32>;      static_assert(is_trivial_of_size<TrivialMedium>(32),      "Invalid type");
+using TrivialLarge   = Trivial<128>;     static_assert(is_trivial_of_size<TrivialLarge>(128),      "Invalid type");
+using TrivialHuge    = Trivial<1024>;    static_assert(is_trivial_of_size<TrivialHuge>(1024),      "Invalid type");
+using TrivialMonster = Trivial<4*1024>;  static_assert(is_trivial_of_size<TrivialMonster>(4*1024), "Invalid type");
+
+static_assert(is_non_trivial_nothrow_movable<NonTrivialStringNoExcept>(), "Invalid type");
+static_assert(is_non_trivial_non_nothrow_movable<NonTrivialString>(), "Invalid type");
+
+using NonTrivialArrayMedium = NonTrivialArray<32>;
+static_assert(is_non_trivial_of_size<NonTrivialArrayMedium>(32), "Invalid type");
+
   
 // create policies
 template<class Container>
@@ -463,14 +489,13 @@ void bench()
 
 int main()
 {
-  bench<Small>();
-  bench<Medium>();
-  bench<Large>();
-  bench<Huge>();
-  bench<Monster>();
-  bench<NonTrivialString<MovableNoExcept> >();
-  bench<NonTrivialString<Movable> >();
-  bench<NonTrivialString<NonMovable> >();
+  bench<TrivialSmall>();
+  bench<TrivialMedium>();
+  bench<TrivialLarge>();
+  bench<TrivialHuge>();
+  bench<TrivialMonster>();
+  bench<NonTrivialString>();
+  bench<NonTrivialStringNoExcept>();
   bench<NonTrivialArray<32> >();
   graphs::output(graphs::Output::GOOGLE);
 }
