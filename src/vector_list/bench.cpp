@@ -367,16 +367,16 @@ inline static void run(Container &container, std::size_t size)
 }
   
   
-// test
+using std::chrono::milliseconds;
+using std::chrono::microseconds;
 
+// benchmarking procedure
 template<typename Container,
          typename DurationUnit,
          template<class> class CreatePolicy,
          template<class> class ...TestPolicy>
 void bench(const std::string& type, const std::initializer_list<int> &sizes)
 {
-  using std::chrono::milliseconds;
-  using std::chrono::microseconds;
   using Clock = std::chrono::high_resolution_clock;
 
   // create an element to copy so the temporary creation
@@ -403,13 +403,10 @@ void bench(const std::string& type, const std::initializer_list<int> &sizes)
 }
 
 
-// Launch benchmarks on different sizes
+// benchmarks
 template<typename T>
-void bench()
-{
-  using std::chrono::milliseconds;
-  using std::chrono::microseconds;
-  
+struct bench_fill_back { 
+  static void run()
   {
     new_graph<T>("fill_back", "us");
     auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
@@ -418,7 +415,11 @@ void bench()
     bench<std::list<T>,   microseconds, Empty, FillBack>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, FillBack>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_emplace_back {
+  static void run()
   {
     new_graph<T>("emplace_back", "us");
     auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
@@ -426,7 +427,11 @@ void bench()
     bench<std::list<T>,   microseconds, Empty, EmplaceBack>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, EmplaceBack>("deque",  sizes);
   }
+};
 
+template<typename T>
+struct bench_fill_front {
+  static void run()
   {
     new_graph<T>("fill_front", "us");
     auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
@@ -434,7 +439,11 @@ void bench()
     bench<std::list<T>,   microseconds, Empty, FillFront>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, FillFront>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_emplace_front {
+  static void run()
   {
     new_graph<T>("emplace_front", "us");
     auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
@@ -442,7 +451,11 @@ void bench()
     bench<std::list<T>,   microseconds, Empty, EmplaceFront>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, EmplaceFront>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_linear_search {
+  static void run()
   {
     new_graph<T>("linear_search", "us");
     auto sizes = {1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
@@ -450,7 +463,11 @@ void bench()
     bench<std::list<T>,   microseconds, FilledRandom, Find>("list",   sizes);
     bench<std::deque<T>,  microseconds, FilledRandom, Find>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_random_insert {
+  static void run()
   {
     new_graph<T>("random_insert", "ms");
     auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
@@ -458,7 +475,11 @@ void bench()
     bench<std::list<T>,   milliseconds, FilledRandom, Insert>("list",   sizes);
     bench<std::deque<T>,  milliseconds, FilledRandom, Insert>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_random_remove {
+  static void run()
   {
     new_graph<T>("random_remove", "ms");
     auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
@@ -467,7 +488,11 @@ void bench()
     bench<std::list<T>,   milliseconds, FilledRandom, Erase>("list",   sizes);
     bench<std::deque<T>,  milliseconds, FilledRandom, Erase>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_sort {
+  static void run()
   {
     new_graph<T>("sort", "ms");
     auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
@@ -475,7 +500,11 @@ void bench()
     bench<std::list<T>,   milliseconds, FilledRandom, Sort>("list",   sizes);
     bench<std::deque<T>,  milliseconds, FilledRandom, Sort>("deque",  sizes);
   }
-  
+};
+
+template<typename T>
+struct bench_destruction {
+  static void run()
   {
     new_graph<T>("destruction", "us");
     auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
@@ -483,7 +512,11 @@ void bench()
     bench<std::list<T>,   microseconds, SmartFilled, SmartDelete>("list",   sizes);
     bench<std::deque<T>,  microseconds, SmartFilled, SmartDelete>("deque",  sizes);
   }
-
+};
+  
+template<typename T>
+struct bench_number_crunching {
+  static void run()
   {
     new_graph<T>("number_crunching", "ms");
     auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
@@ -491,18 +524,43 @@ void bench()
     bench<std::list<T>,   milliseconds, Empty, RandomSortedInsert>("list",   sizes);
     bench<std::deque<T>,  milliseconds, Empty, RandomSortedInsert>("deque",  sizes);
   }
+};
+
+
+// benchmark a list of types
+template<template<class> class Benchmark>
+void bench_types()
+{  
+}
+
+template<template<class> class Benchmark, typename T, typename ...Types>
+void bench_types()
+{  
+  Benchmark<T>::run();
+  bench_types<Benchmark, Types...>();
+}
+
+
+// run all benchmarks
+template<typename ...Types>
+void bench_all()
+{
+  bench_types<bench_fill_back, Types...>();
+  bench_types<bench_emplace_back, Types...>();
+  bench_types<bench_fill_front, Types...>();
+  bench_types<bench_emplace_front, Types...>();
+  bench_types<bench_linear_search, Types...>();
+  bench_types<bench_random_insert, Types...>();
+  bench_types<bench_random_remove, Types...>();
+  bench_types<bench_sort, Types...>();
+  bench_types<bench_destruction, Types...>();
+  bench_types<bench_number_crunching, Types...>();
 }
 
 
 int main()
 {
-  bench<TrivialSmall>();
-  bench<TrivialMedium>();
-  bench<TrivialLarge>();
-  bench<TrivialHuge>();
-  bench<TrivialMonster>();
-  bench<NonTrivialString>();
-  bench<NonTrivialStringNoExcept>();
-  bench<NonTrivialArray<32> >();
+  bench_all<TrivialSmall, TrivialMedium, TrivialLarge, TrivialHuge, TrivialMonster,
+            NonTrivialString, NonTrivialStringNoExcept, NonTrivialArray<32> >();
   graphs::output(graphs::Output::GOOGLE);
 }
