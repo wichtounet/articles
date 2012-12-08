@@ -121,5 +121,45 @@ void graphs::output(Output output){
         }
 
         //...In the land of Google where shadow lies
+    } else if (output == Output::PLUGIN) {
+        std::ofstream file("graph.html");
+
+        //One function to rule them all
+        for(auto& graph : all_graphs){
+            file << "[line_chart width=\"600px\" height=\"400px\" scale_button=\"true\" title=\"" << graph->title 
+                << "\" h_title=\"Number of elements\" v_title=\"" << graph->unit << "\"]" << std::endl;
+            
+            //['x', 'Cats', 'Blanket 1', 'Blanket 2'],
+            auto results = compute_values(graph);
+
+            file << "['x'";
+
+            auto first = results.begin()->second;
+            for(auto& pair : first){
+                file << ", '" << pair.first << "'";
+            }
+
+            file << "]," << std::endl;
+
+            std::vector<std::string> groups;
+            for(auto& group : results){
+                groups.push_back(group.first);
+            }
+            std::sort(groups.begin(), groups.end(), numeric_cmp);
+
+            std::size_t max = 0;
+            for(auto& group_title : groups){
+                file << "['" << group_title << "'";
+
+                for(auto& serie : results[group_title]){
+                    file << ", " << serie.second;
+                    max = std::max(max, serie.second);
+                }
+
+                file << "]," << std::endl;
+            }
+
+            file << "[/line_chart]" << std::endl;
+        }
     }
 }

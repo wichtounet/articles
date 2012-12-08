@@ -23,7 +23,8 @@ struct graph {
 };
 
 enum class Output : unsigned int {
-    GOOGLE
+    GOOGLE,
+    PLUGIN
 };
 
 void new_graph(const std::string& graph_name, const std::string& graph_title, const std::string& unit);

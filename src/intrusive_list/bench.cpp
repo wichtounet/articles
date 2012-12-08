@@ -519,7 +519,7 @@ int main(){
     bench<127>();       //1024 bytes
     bench<511>();       //4096 bytes
 
-    graphs::output(graphs::Output::GOOGLE);
+    graphs::output(graphs::Output::PLUGIN);
 
     return 0;
 }
