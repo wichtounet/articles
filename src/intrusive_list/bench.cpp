@@ -518,15 +518,8 @@ int main(){
     bench<15>();        //128 bytes  
     bench<127>();       //1024 bytes
     bench<511>();       //4096 bytes
-    //bench<NonTrivial>();
-    
-    /*graphs::new_graph("number_crunching", "number_crunching", "ms");
 
-    bench_number_crunching<std::vector<Small>>("vector");
-    bench_number_crunching<std::list<Small>>("list");
-    bench_number_crunching<std::deque<Small>>("deque");
-
-    graphs::output(graphs::Output::GOOGLE);*/
+    graphs::output(graphs::Output::GOOGLE);
 
     return 0;
 }
