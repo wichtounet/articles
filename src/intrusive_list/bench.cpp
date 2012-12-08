@@ -313,8 +313,39 @@ void bench_reverse(const std::string& type){
 
 /* Write */
 
+//Necessary to not double the memory usage
 template<typename Container>
-void bench_write(const std::string& type){
+void bench_write_standard(const std::string& type){
+    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
+    for(auto size : sizes){
+        microseconds ms_tot;
+
+        Container container;
+        for(std::size_t j = 0; j < size; ++j){
+            container.push_back({j});
+        }
+
+        for(std::size_t i = 0; i < REPEAT; ++i){
+            Clock::time_point t0 = Clock::now();
+            
+            auto it = container.begin();
+            auto end = container.end();
+
+            for(; it != end; ++it){
+                ++(it->a);
+            }
+
+            Clock::time_point t1 = Clock::now();
+            auto ms = std::chrono::duration_cast<microseconds>(t1 - t0);
+            ms_tot += ms;
+        }
+
+        graphs::new_result(type, std::to_string(size), ms_tot.count() / REPEAT);
+    }
+}
+
+template<typename Container>
+void bench_write_intrusive(const std::string& type){
     std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
     for(auto size : sizes){
         std::vector<typename Container::value_type> temp;
@@ -322,8 +353,6 @@ void bench_write(const std::string& type){
         for(std::size_t i = 0; i < size; ++i){
             temp.push_back({i});
         }
-
-        std::random_shuffle(temp.begin(), temp.end());
 
         microseconds ms_tot;
 
@@ -455,10 +484,10 @@ void bench(){
     
     graphs::new_graph("write_" + size_str, "write - "  + size_str + " byte", "ms");
 
-    bench_write<std::list<T>>("list");
-    bench_write<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
-    bench_write<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
-    bench_write<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
+    bench_write_standard<std::list<T>>("list");
+    bench_write_intrusive<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
+    bench_write_intrusive<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
+    bench_write_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
     /*graphs::new_graph("reverse_" + size_str, "reverse - "  + size_str + " byte", "ms");
 
