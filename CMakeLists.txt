@@ -10,7 +10,7 @@ set(VERSION_PATCH 0)
 #Activate warnings
 set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
 set(CMAKE_CXX_FLAGS_DEBUG       "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE     "-std=c++11 -pthread -DNDEBUG -O2 -fomit-frame-pointer -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE     "-std=c++11 -O2 -fomit-frame-pointer -march=native")
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
