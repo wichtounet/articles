@@ -13,7 +13,6 @@
 
 //Chrono typedefs
 typedef std::chrono::high_resolution_clock Clock;
-typedef std::chrono::milliseconds milliseconds;
 typedef std::chrono::microseconds microseconds;
 
 static const std::size_t REPEAT = 7;
@@ -108,54 +107,44 @@ void bench_fill_back_intrusive(const std::string& type){
     }
 }
 
-/* Number crunching */
+/* Iterate */
 
 template<typename Container>
-inline void random_sorted_insert(std::size_t size, Container& container){
-    std::mt19937 generator;
-    std::uniform_int_distribution<std::size_t> distribution(0, std::numeric_limits<std::size_t>::max() - 1);
+inline void iterate(Container& container){
+    std::size_t a = 0;
 
-    for(std::size_t i = 0; i < size; ++i){
-        typename Container::value_type v = {distribution(generator)};
-
-        auto it = container.begin();
-        auto end = container.end();
-
-        while(it != end){
-            if(*it >= v){
-                break;
-            }
-
-            ++it;
-        }
-
-        container.insert(it, v);
+    for(auto& i : container){
+        a += i.a;
     }
 }
 
 template<typename Container>
-void bench_number_crunching(const std::string& type){
-    std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+void bench_iterate(const std::string& type){
+    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
     for(auto size : sizes){
+        std::vector<typename Container::value_type> objects;
+        objects.reserve(size);
+
+        std::mt19937 generator;
+        std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
+        
         Container container;
 
-        milliseconds ms_tot;
-
-        //Repeat twice
-        for(std::size_t i = 0; i < 2; ++i){
-            Clock::time_point t0 = Clock::now();
-            
-            random_sorted_insert(size, container); 
-            
-            Clock::time_point t1 = Clock::now();
-            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-            ms_tot += ms;
-
-            //For the next iteration
-            container.clear();
+        for(std::size_t i = 0; i < size; ++i){
+            objects.push_back({distribution(generator)});
+            container.push_back(objects[i]);
         }
 
-        graphs::new_result(type, std::to_string(size), ms_tot.count() / 2);
+        Clock::time_point t0 = Clock::now();
+
+        for(std::size_t i = 0; i < REPEAT; ++i){
+            iterate<Container>(container);
+        }
+
+        Clock::time_point t1 = Clock::now();
+        auto d = std::chrono::duration_cast<microseconds>(t1 - t0);
+
+        graphs::new_result(type, std::to_string(size), d.count() / REPEAT);
     }
 }
 
@@ -173,13 +162,17 @@ template<typename Container>
 void bench_find(const std::string& type){
     std::vector<std::size_t> sizes = {1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
     for(auto size : sizes){
-        Container container;
-        
+        std::vector<typename Container::value_type> objects;
+        objects.reserve(size);
+
         std::mt19937 generator;
         std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
+        
+        Container container;
 
         for(std::size_t i = 0; i < size; ++i){
-            container.push_back({distribution(generator)});
+            objects.push_back({distribution(generator)});
+            container.push_back(objects[i]);
         }
 
         Clock::time_point t0 = Clock::now();
@@ -198,83 +191,70 @@ void bench_find(const std::string& type){
 /* Insert */
 
 template<typename Container>
-inline void insert(std::size_t size, Container& container){
-    std::mt19937 generator;
-    std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
-
-    for(std::size_t i = 0; i < 1000; ++i){
-        typename Container::value_type v = {distribution(generator)};
-        auto it = std::find(container.begin(), container.end(), v);
-        container.insert(it, {size + i});
-    }
-}
-
-template<typename Container>
-void bench_insert(const std::string& type){
+void bench_insert_standard(const std::string& type){
     std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
     for(auto size : sizes){
         std::vector<typename Container::value_type> temp;
+        Container container;
 
         for(std::size_t i = 0; i < size; ++i){
             temp.push_back({i});
+            container.push_back(temp[i]);
         }
-
-        std::random_shuffle(temp.begin(), temp.end());
-
-        Container container(temp.begin(), temp.end());
+        
+        std::mt19937 generator;
+        std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
 
         Clock::time_point t0 = Clock::now();
 
         for(std::size_t i = 0; i < REPEAT; ++i){
-            insert<Container>(size, container);
+            for(std::size_t j = 0; j < 1000; ++j){
+                auto v = distribution(generator);
+                container.insert(
+                        std::find(container.begin(), container.end(), temp[v]), 
+                        {size + j});
+            }
         }
 
         Clock::time_point t1 = Clock::now();
-        auto d = std::chrono::duration_cast<milliseconds>(t1 - t0);
+        auto d = std::chrono::duration_cast<microseconds>(t1 - t0);
 
         graphs::new_result(type, std::to_string(size), d.count() / REPEAT);
     }
 }
 
-/* Remove */
-
 template<typename Container>
-inline void remove(Container& container){
-    for(std::size_t i = 0; i < 1000; ++i){
-        typename Container::value_type v = {i};
-        auto it = std::find(container.begin(), container.end(), v);
-        container.erase(it);
-    }
-}
-
-template<typename Container>
-void bench_remove(const std::string& type){
+void bench_insert_intrusive(const std::string& type){
     std::vector<std::size_t> sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
     for(auto size : sizes){
         std::vector<typename Container::value_type> temp;
+        temp.reserve(size + REPEAT * 1000);
+        Container container;
 
         for(std::size_t i = 0; i < size; ++i){
             temp.push_back({i});
+            container.push_back(temp[i]);
         }
+    
+        std::mt19937 generator;
+        std::uniform_int_distribution<std::size_t> distribution(0, size - 1);
 
-        std::random_shuffle(temp.begin(), temp.end());
-
-        milliseconds ms_tot;
-
-        Container container;
+        Clock::time_point t0 = Clock::now();
 
         for(std::size_t i = 0; i < REPEAT; ++i){
-            container.clear();
-            container.insert(container.begin(), temp.begin(), temp.end());
-
-            Clock::time_point t0 = Clock::now();
-            remove<Container>(container);
-            Clock::time_point t1 = Clock::now();
-            milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-            ms_tot += ms;
+            for(std::size_t j = 0; j < 1000; ++j){
+                auto v = distribution(generator);
+                temp.push_back({size + 1});
+                container.insert(
+                        container.iterator_to(temp[v]), 
+                        temp.back());
+            }
         }
 
-        graphs::new_result(type, std::to_string(size), ms_tot.count() / REPEAT);
+        Clock::time_point t1 = Clock::now();
+        auto d = std::chrono::duration_cast<microseconds>(t1 - t0);
+
+        graphs::new_result(type, std::to_string(size), d.count() / REPEAT);
     }
 }
 
@@ -428,7 +408,7 @@ void bench_destruction(const std::string& type){
         microseconds us_tot;
 
         for(std::size_t i = 0; i < REPEAT; ++i){
-            Container* container = new Container();
+            auto* container = new Container();
 
             for(std::size_t i = 0; i < size; ++i){
                 container->push_back(i);
@@ -436,6 +416,35 @@ void bench_destruction(const std::string& type){
 
             Clock::time_point t0 = Clock::now();
             delete container;
+            Clock::time_point t1 = Clock::now();
+            
+            auto us = std::chrono::duration_cast<microseconds>(t1 - t0);
+            us_tot += us;
+        }
+    
+        graphs::new_result(type, std::to_string(size), us_tot.count() / REPEAT);
+    }
+}
+
+template<typename Container>
+void bench_destruction_intrusive(const std::string& type){
+    std::vector<std::size_t> sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
+    for(auto size : sizes){
+        microseconds us_tot;
+
+        for(std::size_t i = 0; i < REPEAT; ++i){
+            auto* objects = new std::vector<typename Container::value_type>();
+            objects->reserve(size);
+            auto* container = new Container();
+
+            for(std::size_t i = 0; i < size; ++i){
+                objects->push_back({i});
+                container->push_back(objects->at(i));
+            }
+
+            Clock::time_point t0 = Clock::now();
+            delete container;
+            delete objects;
             Clock::time_point t1 = Clock::now();
             
             auto us = std::chrono::duration_cast<microseconds>(t1 - t0);
@@ -457,57 +466,61 @@ void bench(){
 
     std::string size_str = std::to_string(sizeof(T));
 
-/*    graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
+    graphs::new_graph("fill_back_" + size_str, "fill_back - "  + size_str + " byte", "us");
 
     bench_fill_back_standard<std::list<T>>("list");
     bench_fill_back_intrusive<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
     bench_fill_back_intrusive<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
-    bench_fill_back_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");*/
+    bench_fill_back_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
-    /*graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte", "us");
+    graphs::new_graph("linear_search_" + size_str, "linear_search - "  + size_str + " byte", "us");
     
-    bench_find<std::vector<T>>("vector");
     bench_find<std::list<T>>("list");
-    bench_find<std::deque<T>>("deque");*/
+    bench_find<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
+    bench_find<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
+    bench_find<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
-    /*graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte", "ms");
+    graphs::new_graph("iterate_" + size_str, "iterate - "  + size_str + " byte", "us");
     
-    bench_insert<std::vector<T>>("vector");
-    bench_insert<std::list<T>>("list");
-    bench_insert<std::deque<T>>("deque");*/
+    bench_iterate<std::list<T>>("list");
+    bench_iterate<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
+    bench_iterate<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
+    bench_iterate<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
+     
+    graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte", "us");
     
-    /*graphs::new_graph("random_remove_" + size_str, "random_remove - "  + size_str + " byte", "ms");
+    bench_insert_standard<std::list<T>>("list");
+    bench_insert_intrusive<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
+    bench_insert_intrusive<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
+    bench_insert_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
-    bench_remove<std::vector<T>>("vector");
-    bench_remove<std::list<T>>("list");
-    bench_remove<std::deque<T>>("deque");*/
-    
-    graphs::new_graph("write_" + size_str, "write - "  + size_str + " byte", "ms");
+    graphs::new_graph("write_" + size_str, "write - "  + size_str + " byte", "us");
 
     bench_write_standard<std::list<T>>("list");
     bench_write_intrusive<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
     bench_write_intrusive<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
     bench_write_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
-    /*graphs::new_graph("reverse_" + size_str, "reverse - "  + size_str + " byte", "ms");
+    graphs::new_graph("reverse_" + size_str, "reverse - "  + size_str + " byte", "us");
 
     bench_reverse<std::list<T>>("list");
     bench_reverse<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
     bench_reverse<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
-    bench_reverse<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");*/
+    bench_reverse<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
-   /* graphs::new_graph("sort_" + size_str, "sort - "  + size_str + " byte", "ms");
+    graphs::new_graph("sort_" + size_str, "sort - "  + size_str + " byte", "us");
 
     bench_sort<std::list<T>>("list");
     bench_sort<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
     bench_sort<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
-    bench_sort<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");*/
+    bench_sort<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
     
-    /*graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "us");
+    graphs::new_graph("destruction_" + size_str, "destruction - "  + size_str + " byte", "us");
     
-    bench_destruction<std::vector<T>>("vector");
     bench_destruction<std::list<T>>("list");
-    bench_destruction<std::deque<T>>("deque");*/
+    bench_destruction_intrusive<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
+    bench_destruction_intrusive<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
+    bench_destruction_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
 }
 
 } //end of anonymous namespace
