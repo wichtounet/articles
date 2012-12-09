@@ -435,7 +435,9 @@ struct bench_fill_front {
   {
     new_graph<T>("fill_front", "us");
     auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
-    bench<std::vector<T>, microseconds, Empty, FillFront>("vector", sizes);
+    if(sizeof(T) <= sizeof(TrivialSmall))
+      // it is much worse with bigger data
+      bench<std::vector<T>, microseconds, Empty, FillFront>("vector", sizes);
     bench<std::list<T>,   microseconds, Empty, FillFront>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, FillFront>("deque",  sizes);
   }
@@ -447,7 +449,9 @@ struct bench_emplace_front {
   {
     new_graph<T>("emplace_front", "us");
     auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
-    bench<std::vector<T>, microseconds, Empty, EmplaceFront>("vector", sizes);
+    if(sizeof(T) <= sizeof(TrivialSmall))
+      // it is much worse with bigger data
+      bench<std::vector<T>, microseconds, Empty, EmplaceFront>("vector", sizes);
     bench<std::list<T>,   microseconds, Empty, EmplaceFront>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, EmplaceFront>("deque",  sizes);
   }
@@ -545,16 +549,18 @@ void bench_types()
 template<typename ...Types>
 void bench_all()
 {
-  bench_types<bench_fill_back, Types...>();
-  bench_types<bench_emplace_back, Types...>();
-  bench_types<bench_fill_front, Types...>();
-  bench_types<bench_emplace_front, Types...>();
-  bench_types<bench_linear_search, Types...>();
-  bench_types<bench_random_insert, Types...>();
-  bench_types<bench_random_remove, Types...>();
-  bench_types<bench_sort, Types...>();
-  bench_types<bench_destruction, Types...>();
-  bench_types<bench_number_crunching, Types...>();
+  bench_types<bench_fill_back,        Types...>();
+  bench_types<bench_emplace_back,     Types...>();
+  bench_types<bench_fill_front,       Types...>();
+  bench_types<bench_emplace_front,    Types...>();
+  bench_types<bench_linear_search,    Types...>();
+  bench_types<bench_random_insert,    Types...>();
+  bench_types<bench_random_remove,    Types...>();
+  bench_types<bench_sort,             Types...>();
+  bench_types<bench_destruction,      Types...>();
+  
+  // it is really slow so run only for limited set of data
+  bench_types<bench_number_crunching, TrivialSmall, TrivialMedium>();
 }
 
 
