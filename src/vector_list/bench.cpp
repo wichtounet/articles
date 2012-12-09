@@ -229,9 +229,17 @@ template<class Container>
 struct FillBack {
   static const typename Container::value_type value;
   inline static void run(Container &c, std::size_t size)
-  { std::fill_n(std::back_inserter(c), size, value); }
+  { for(size_t i=0; i<size; ++i) c.push_back(value); }
 };
 template<class Container> const typename Container::value_type FillBack<Container>::value{};
+  
+template<class Container>
+struct FillBackInserter {
+  static const typename Container::value_type value;
+  inline static void run(Container &c, std::size_t size)
+  { std::fill_n(std::back_inserter(c), size, value); }
+};
+template<class Container> const typename Container::value_type FillBackInserter<Container>::value{};
   
 template<class Container>
 struct EmplaceBack {
@@ -410,10 +418,13 @@ struct bench_fill_back {
   {
     new_graph<T>("fill_back", "us");
     auto sizes = { 100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000 };
-    bench<std::vector<T>, microseconds, Empty, ReserveSize, FillBack>("vector_pre", sizes);
     bench<std::vector<T>, microseconds, Empty, FillBack>("vector", sizes);
     bench<std::list<T>,   microseconds, Empty, FillBack>("list",   sizes);
     bench<std::deque<T>,  microseconds, Empty, FillBack>("deque",  sizes);
+    bench<std::vector<T>, microseconds, Empty, ReserveSize, FillBack>("vector_reserve", sizes);
+    bench<std::vector<T>, microseconds, Empty, FillBackInserter>("vector_inserter", sizes);
+    bench<std::list<T>,   microseconds, Empty, FillBackInserter>("list_inserter",   sizes);
+    bench<std::deque<T>,  microseconds, Empty, FillBackInserter>("deque_inserter",  sizes);
   }
 };
 
