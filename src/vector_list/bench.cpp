@@ -130,9 +130,8 @@ class NonTrivialStringMovableNoExcept {
         ~NonTrivialStringMovableNoExcept() = default;
         NonTrivialStringMovableNoExcept &operator=(const NonTrivialStringMovableNoExcept &) = default;
         NonTrivialStringMovableNoExcept &operator=(NonTrivialStringMovableNoExcept &&other) noexcept {
-            using namespace std;
-            swap(data, other.data);
-            swap(a, other.a);
+            std::swap(data, other.data);
+            std::swap(a, other.a);
             return *this;
         }
         bool operator<(const NonTrivialStringMovableNoExcept &other) const { return a < other.a; }
