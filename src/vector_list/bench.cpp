@@ -12,36 +12,12 @@
 #include <memory>
 
 #include "bench.hpp"
+#include "demangle.hpp"
 #include "graphs.hpp"
 
 static const std::size_t REPEAT = 5;
 
 namespace {
-
-struct deleter_free {
-    template<class T>
-    void operator()(T *p) const {
-        free(p);
-    }
-};
-
-#ifdef __GNUC__
-
-#include <cxxabi.h>
-
-std::string demangle(const char *name){
-    int status = 0;
-    std::unique_ptr<char, deleter_free> demName(abi::__cxa_demangle(name, nullptr, nullptr, &status));
-    return (status==0) ? demName.get() : name;
-}
-
-#else
-
-std::string demangle(const char *name){
-    return name;
-}
-
-#endif
 
 bool is_tag(int c){
     return std::isalnum(c) || c == '_';

@@ -66,7 +66,7 @@ add_executable(linear_bench src/linear_sorting/bench.cpp)
 target_link_libraries(linear_bench rt)
 
 #Vector vs List
-add_executable(vector_list src/vector_list/bench.cpp src/graphs.cpp)
+add_executable(vector_list src/vector_list/bench.cpp src/graphs.cpp src/demangle.cpp)
 
 target_link_libraries(vector_list rt)
 
