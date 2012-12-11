@@ -1,3 +1,5 @@
+#include <boost/intrusive/list.hpp>
+
 // create policies
 
 //Create empty container
@@ -46,7 +48,7 @@ struct FilledRandom {
             v.clear();
             v.resize(size);
             for(std::size_t i = 0; i < size; ++i){
-                v.emplace_back(i);
+                v.push_back({i});
             }
             std::shuffle(begin(v), end(v), std::mt19937());
         }

@@ -62,25 +62,6 @@ static_assert(sizeof(Intrusive<4096>)   == sizeof(Normal<4096>) + 2 * sizeof(std
 
 namespace {
 
-/* Launch benchmarks on different sizes */
-
-template<unsigned int Size>
-void bench_old(){
-    typedef Normal<Size> T;
-    typedef Intrusive<Size, boost::intrusive::normal_link> I1;
-    typedef Intrusive<Size, boost::intrusive::safe_link> I2;
-    typedef Intrusive<Size, boost::intrusive::auto_unlink> I3;
-
-    std::string size_str = std::to_string(sizeof(T));
-    
-    graphs::new_graph("random_insert_" + size_str, "random_insert - "  + size_str + " byte", "us");
-    
-    bench_insert_standard<std::list<T>>("list");
-    bench_insert_intrusive<boost::intrusive::list<I1, boost::intrusive::constant_time_size<false>>>("normal_ilist");
-    bench_insert_intrusive<boost::intrusive::list<I2, boost::intrusive::constant_time_size<false>>>("safe_ilist");
-    bench_insert_intrusive<boost::intrusive::list<I3, boost::intrusive::constant_time_size<false>>>("auto_unlink_ilist");
-}
-
 template<unsigned int Size>
 struct intrusive_list_type {
     typedef Intrusive<Size, boost::intrusive::normal_link> I1;
