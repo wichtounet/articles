@@ -345,7 +345,7 @@ struct Insert {
   
 template<class Container>
 struct Erase {
-    inline static void run(Container &c, std::size_t size){
+    inline static void run(Container &c, std::size_t){
         for(std::size_t i=0; i<1000; ++i) {
             // hand written comparison to eliminate temporary object creation
             c.erase(std::find_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; }));
@@ -355,7 +355,7 @@ struct Erase {
   
 template<class Container>
 struct RemoveErase {
-    inline static void run(Container &c, std::size_t size){
+    inline static void run(Container &c, std::size_t){
         for(std::size_t i=0; i<1000; ++i) {
             // hand written comparison to eliminate temporary object creation
             c.erase(std::remove_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; }), end(c));
@@ -365,21 +365,21 @@ struct RemoveErase {
   
 template<class Container>
 struct Sort {
-    inline static void run(Container &c, std::size_t size){
+    inline static void run(Container &c, std::size_t){
         std::sort(c.begin(), c.end());
     }
 };
   
 template<class T>
 struct Sort<std::list<T> > {
-    inline static void run(std::list<T> &c, std::size_t size){
+    inline static void run(std::list<T> &c, std::size_t){
         c.sort();
     }
 };
 
 template<class Container>
 struct SmartDelete {
-    inline static void run(Container &c, std::size_t size) { c.reset(); }
+    inline static void run(Container &c, std::size_t) { c.reset(); }
 };
 
 template<class Container>

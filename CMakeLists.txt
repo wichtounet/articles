@@ -8,7 +8,7 @@ set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
 #Activate warnings
-set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
+set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -g -pthread -std=c++11 -pedantic -Wall -Wextra -Wno-long-long -Wno-missing-field-initializers")
 set(CMAKE_CXX_FLAGS_DEBUG       "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE     "-std=c++11 -O2 -fomit-frame-pointer -march=native")
 
