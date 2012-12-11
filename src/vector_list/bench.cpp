@@ -80,6 +80,11 @@ constexpr bool is_non_trivial_non_movable(){
         &&  !std::is_move_assignable<T>::value;
 }
 
+template<typename T>
+constexpr bool is_small(){ 
+   return sizeof(T) <= sizeof(std::size_t);
+}
+
 } //end of anonymous namespace
 
 // tested types
@@ -451,7 +456,7 @@ struct bench_fill_front {
         auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
         
         // it is too slow with bigger data types
-        if(sizeof(T) <= sizeof(TrivialSmall)){
+        if(is_small<T>()){
             bench<std::vector<T>, microseconds, Empty, FillFront>("vector", sizes);
         }
 
@@ -468,7 +473,7 @@ struct bench_emplace_front {
         auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
         
         // it is too slow with bigger data types
-        if(sizeof(T) <= sizeof(TrivialSmall)){
+        if(is_small<T>()){
             bench<std::vector<T>, microseconds, Empty, EmplaceFront>("vector", sizes);
         }
 
