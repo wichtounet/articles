@@ -11,103 +11,100 @@
 #include <typeinfo>
 #include <memory>
 
+#include "bench.hpp"
 #include "graphs.hpp"
 
 static const std::size_t REPEAT = 5;
 
-//Chrono typedefs
-
-using std::chrono::milliseconds;
-using std::chrono::microseconds;
-
-using Clock = std::chrono::high_resolution_clock;
-
 namespace {
 
-  struct deleter_free {
+struct deleter_free {
     template<class T>
-    void operator()(T *p) const { free(p); }
-  };
+    void operator()(T *p) const {
+        free(p);
+    }
+};
 
 #ifdef __GNUC__
 
 #include <cxxabi.h>
 
-  std::string demangle(const char *name){
+std::string demangle(const char *name){
     int status = 0;
     std::unique_ptr<char, deleter_free> demName(abi::__cxa_demangle(name, nullptr, nullptr, &status));
     return (status==0) ? demName.get() : name;
-  }
-  
+}
+
 #else
-  
-  std::string demangle(const char *name){
-      return name;
-  }
-  
+
+std::string demangle(const char *name){
+    return name;
+}
+
 #endif
 
-    bool is_tag(int c){
-        return std::isalnum(c) || c == '_';
-    }
-
-    std::string tag(std::string name){
-        std::replace_if(begin(name), end(name), [](char c){ return !is_tag(c); }, '_');
-        std::string res;
-        res.swap(name);
-        return res;
-    }
-
-    template<typename T>
-    void new_graph(const std::string &testName, const std::string &unit){
-        std::string title(testName + " - " + demangle(typeid(T).name()));
-        graphs::new_graph(tag(title), title, unit);
-    }
-
-    template<typename T>
-    constexpr bool is_trivial_of_size(std::size_t size){ 
-        return std::is_trivial<T>::value && sizeof(T) == size; 
-    }
-
-    template<typename T>
-    constexpr bool is_non_trivial_of_size(std::size_t size){ 
-        return 
-                !std::is_trivial<T>::value 
-            &&  sizeof(T) == size 
-            &&  std::is_copy_constructible<T>::value
-            &&  std::is_copy_assignable<T>::value 
-            &&  std::is_move_constructible<T>::value 
-            &&  std::is_move_assignable<T>::value; 
-    }
-
-    template<typename T>
-    constexpr bool is_non_trivial_nothrow_movable(){ 
-        return 
-                !std::is_trivial<T>::value
-            &&  std::is_nothrow_move_constructible<T>::value
-            &&  std::is_nothrow_move_assignable<T>::value; 
-    }
-
-    template<typename T>
-    constexpr bool is_non_trivial_non_nothrow_movable(){ 
-        return 
-                !std::is_trivial<T>::value
-            &&  std::is_move_constructible<T>::value
-            &&  std::is_move_assignable<T>::value
-            &&  !std::is_nothrow_move_constructible<T>::value
-            &&  !std::is_nothrow_move_assignable<T>::value; 
-    }
-  
-    template<typename T>
-    constexpr bool is_non_trivial_non_movable(){ 
-        return 
-                !std::is_trivial<T>::value  
-            &&  std::is_copy_constructible<T>::value 
-            &&  std::is_copy_assignable<T>::value 
-            &&  !std::is_move_constructible<T>::value 
-            &&  !std::is_move_assignable<T>::value;
-    }
+bool is_tag(int c){
+    return std::isalnum(c) || c == '_';
 }
+
+std::string tag(std::string name){
+    std::replace_if(begin(name), end(name), [](char c){ return !is_tag(c); }, '_');
+    std::string res;
+    res.swap(name);
+    return res;
+}
+
+template<typename T>
+void new_graph(const std::string &testName, const std::string &unit){
+    std::string title(testName + " - " + demangle(typeid(T).name()));
+    graphs::new_graph(tag(title), title, unit);
+}
+
+template<typename T>
+constexpr bool is_trivial_of_size(std::size_t size){ 
+    return std::is_trivial<T>::value && sizeof(T) == size; 
+}
+
+template<typename T>
+constexpr bool is_non_trivial_of_size(std::size_t size){ 
+    return 
+            !std::is_trivial<T>::value 
+        &&  sizeof(T) == size 
+        &&  std::is_copy_constructible<T>::value
+        &&  std::is_copy_assignable<T>::value 
+        &&  std::is_move_constructible<T>::value 
+        &&  std::is_move_assignable<T>::value; 
+}
+
+template<typename T>
+constexpr bool is_non_trivial_nothrow_movable(){ 
+    return 
+            !std::is_trivial<T>::value
+        &&  std::is_nothrow_move_constructible<T>::value
+        &&  std::is_nothrow_move_assignable<T>::value; 
+}
+
+template<typename T>
+constexpr bool is_non_trivial_non_nothrow_movable(){ 
+    return 
+            !std::is_trivial<T>::value
+        &&  std::is_move_constructible<T>::value
+        &&  std::is_move_assignable<T>::value
+        &&  !std::is_nothrow_move_constructible<T>::value
+        &&  !std::is_nothrow_move_assignable<T>::value; 
+}
+
+template<typename T>
+constexpr bool is_non_trivial_non_movable(){ 
+    return 
+            !std::is_trivial<T>::value  
+        &&  std::is_copy_constructible<T>::value 
+        &&  std::is_copy_assignable<T>::value 
+        &&  !std::is_move_constructible<T>::value 
+        &&  !std::is_move_assignable<T>::value;
+}
+
+} //end of anonymous namespace
 
 // tested types
 
