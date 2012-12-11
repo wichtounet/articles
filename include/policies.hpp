@@ -21,7 +21,7 @@ struct EmptyPrepareBackup {
             v.clear();
             v.resize(size);
             for(std::size_t i = 0; i < size; ++i){
-                v.emplace_back(i);
+                v.push_back({i});
             }
         }
 
@@ -81,7 +81,7 @@ struct BackupSmartFilled {
             v.clear();
             v.resize(size);
             for(std::size_t i = 0; i < size; ++i){
-                v.emplace_back(i);
+                v.push_back({i});
             }
         }
 

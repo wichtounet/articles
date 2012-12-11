@@ -23,9 +23,7 @@ struct Normal {
     Normal<Size>(){}
     Normal<Size>(std::size_t a) : a(a) {}
 
-    friend bool operator==(const Normal<Size>& s1, const Normal<Size>& s2){ return s1.a == s2.a; }
     friend bool operator<(const Normal<Size>& s1, const Normal<Size>& s2){ return s1.a < s2.a; }
-    friend bool operator>(const Normal<Size>& s1, const Normal<Size>& s2){ return s1.a > s2.a; }
 };
 
 template<>
@@ -37,9 +35,7 @@ struct Normal<sizeof(std::size_t)> {
     Normal(){}
     Normal(std::size_t a) : a(a) {}
 
-    friend bool operator==(const Normal& s1, const Normal& s2){ return s1.a == s2.a; }
     friend bool operator<(const Normal& s1, const Normal& s2){ return s1.a < s2.a; }
-    friend bool operator>(const Normal& s1, const Normal& s2){ return s1.a > s2.a; }
 };
 
 template<unsigned int Size, boost::intrusive::link_mode_type LinkMode = boost::intrusive::safe_link>
