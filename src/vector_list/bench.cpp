@@ -541,4 +541,6 @@ int main(){
 
     //Generate the graphs
     graphs::output(graphs::Output::GOOGLE);
+
+    return 0;
 }
