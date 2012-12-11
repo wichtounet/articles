@@ -1,6 +1,7 @@
 #include <chrono>
 
 #include "graphs.hpp"
+#include "demangle.hpp"
 
 // chrono typedefs
 
@@ -63,4 +64,21 @@ template<template<class> class Benchmark, typename T, typename ...Types>
 void bench_types(){  
     Benchmark<T>::run();
     bench_types<Benchmark, Types...>();
+}
+
+bool is_tag(int c){
+    return std::isalnum(c) || c == '_';
+}
+
+std::string tag(std::string name){
+    std::replace_if(begin(name), end(name), [](char c){ return !is_tag(c); }, '_');
+    std::string res;
+    res.swap(name);
+    return res;
+}
+
+template<typename T>
+void new_graph(const std::string &testName, const std::string &unit){
+    std::string title(testName + " - " + demangle(typeid(T).name()));
+    graphs::new_graph(tag(title), title, unit);
 }

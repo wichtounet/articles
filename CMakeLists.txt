@@ -71,7 +71,7 @@ add_executable(vector_list src/vector_list/bench.cpp src/graphs.cpp src/demangle
 target_link_libraries(vector_list rt)
 
 #List Vs Boost Intrusive List
-add_executable(intrusive_list src/intrusive_list/bench.cpp src/graphs.cpp)
+add_executable(intrusive_list src/intrusive_list/bench.cpp src/graphs.cpp src/demangle.cpp)
 
 #Boost Program Options
 
