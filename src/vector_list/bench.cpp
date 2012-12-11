@@ -6,16 +6,12 @@
 #include <deque>
 #include <thread>
 #include <iostream>
-#include <chrono>
 #include <cstdint>
 #include <typeinfo>
 #include <memory>
 
 #include "bench.hpp"
 #include "demangle.hpp"
-#include "graphs.hpp"
-
-static const std::size_t REPEAT = 5;
 
 namespace {
 
@@ -375,47 +371,6 @@ struct RandomSortedInsert {
 
 template<class Container> std::mt19937 RandomSortedInsert<Container>::generator;
 template<class Container> std::uniform_int_distribution<std::size_t> RandomSortedInsert<Container>::distribution(0, std::numeric_limits<std::size_t>::max() - 1);
-  
-// variadic policy runner
-
-template<class Container>
-inline static void run(Container &, std::size_t){
-    //End of recursion
-}
-
-template<template<class> class Test, template<class> class ...Rest, class Container>
-inline static void run(Container &container, std::size_t size){
-    Test<Container>::run(container, size);
-    run<Rest...>(container, size);
-}
-
-// benchmarking procedure
-
-template<typename Container,
-         typename DurationUnit,
-         template<class> class CreatePolicy,
-         template<class> class ...TestPolicy>
-void bench(const std::string& type, const std::initializer_list<int> &sizes){
-    // create an element to copy so the temporary creation
-    // and initialization will not be accounted in a benchmark
-    typename Container::value_type value;
-    for(auto size : sizes) {
-        Clock::duration duration;
-
-        for(std::size_t i=0; i<REPEAT; ++i) {
-            auto container = CreatePolicy<Container>::make(size);
-
-            Clock::time_point t0 = Clock::now();
-            
-            run<TestPolicy...>(container, size);
-
-            Clock::time_point t1 = Clock::now();
-            duration += t1 - t0;
-        }
-
-        graphs::new_result(type, std::to_string(size), std::chrono::duration_cast<DurationUnit>(duration).count() / REPEAT);
-    }
-}
 
 // Define all benchmarks
 
@@ -555,17 +510,6 @@ struct bench_number_crunching {
 };
 
 //Launch the benchmark
-
-template<template<class> class Benchmark>
-void bench_types(){
-    //Recursion end
-}
-
-template<template<class> class Benchmark, typename T, typename ...Types>
-void bench_types(){  
-    Benchmark<T>::run();
-    bench_types<Benchmark, Types...>();
-}
 
 template<typename ...Types>
 void bench_all(){
