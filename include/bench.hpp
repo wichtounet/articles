@@ -53,6 +53,8 @@ void bench(const std::string& type, const std::initializer_list<int> &sizes){
 
         graphs::new_result(type, std::to_string(size), std::chrono::duration_cast<DurationUnit>(duration).count() / REPEAT);
     }
+
+    CreatePolicy<Container>::clean();
 }
 
 template<template<class> class Benchmark>

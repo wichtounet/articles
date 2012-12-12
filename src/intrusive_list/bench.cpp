@@ -98,7 +98,7 @@ struct bench_sort {
 template<typename T>
 struct bench_reverse {
     static void run(){
-        new_graph<T>("reverse", "ms");
+        new_graph<T>("reverse", "us");
 
         auto sizes = {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
         bench<std::list<T>,                                 microseconds, FilledRandom,    Reverse>("list",               sizes);
@@ -194,8 +194,8 @@ int main(){
         Normal<8>, 
         Normal<32>, 
         Normal<128>, 
-        Normal<1024>, 
-        Normal<4096>>();
+        Normal<1024>>(); 
+        //Normal<4096>>();
 
     graphs::output(graphs::Output::PLUGIN);
 

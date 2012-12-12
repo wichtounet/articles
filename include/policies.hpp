@@ -27,6 +27,11 @@ struct EmptyPrepareBackup {
 
         return Container(); 
     }
+
+    inline static void clean(){
+        v.clear();
+        v.shrink_to_fit();
+    }
 };
 
 template<class Container>
@@ -37,6 +42,7 @@ struct Filled {
     inline static Container make(std::size_t size) { 
         return Container(size); 
     }
+    inline static void clean(){}
 };
   
 template<class Container>
@@ -61,6 +67,11 @@ struct FilledRandom {
 
         return container;
     }
+
+    inline static void clean(){
+        v.clear();
+        v.shrink_to_fit();
+    }
 };
 
 template<class Container>
@@ -71,6 +82,8 @@ struct SmartFilled {
     inline static std::unique_ptr<Container> make(std::size_t size){
         return std::unique_ptr<Container>(new Container(size));
     }
+    
+    inline static void clean(){}
 };
   
 template<class Container>
@@ -92,6 +105,11 @@ struct BackupSmartFilled {
         }
 
         return container;
+    }
+
+    inline static void clean(){
+        v.clear();
+        v.shrink_to_fit();
     }
 };
 
@@ -238,7 +256,7 @@ struct Iterate {
         auto end = std::end(c);
 
         while(it != end){
-
+            ++it;
         }
     }
 };
