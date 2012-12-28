@@ -28,7 +28,7 @@ struct BoundedBuffer {
     void deposit(int data){
         std::unique_lock<std::mutex> l(lock);
 
-        not_full.wait(l, [&count, &capacity](){return count != capacity; });
+        not_full.wait(l, [this](){return count != capacity; });
 
         buffer[rear] = data;
         rear = (rear + 1) % capacity;
@@ -40,7 +40,7 @@ struct BoundedBuffer {
     int fetch(){
         std::unique_lock<std::mutex> l(lock);
 
-        not_empty.wait(l, [&count](){return count != 0; });
+        not_empty.wait(l, [this](){return count != 0; });
 
         int result = buffer[front];
         front = (front + 1) % capacity;
