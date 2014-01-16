@@ -4,22 +4,15 @@
 #include <vector>
 
 struct AtomicCounter {
-    bool flag = false;
     std::atomic<int> value;
 
+    AtomicCounter() { value = 0; }
+
     void increment(){
-       if(!flag) {
-         value = 0;
-         flag = true;
-       }
         ++value;
     }
 
     void decrement(){
-        if(!flag) {
-	  value = 0;
-	  flag = true;
-	}
         --value;
     }
 
