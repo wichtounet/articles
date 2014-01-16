@@ -6,6 +6,8 @@
 struct AtomicCounter {
     std::atomic<int> value;
 
+    AtomicCounter() : value(0) {}
+
     void increment(){
         ++value;
     }
