@@ -36,7 +36,6 @@ template<typename Container,
 void bench(const std::string& type, const std::initializer_list<int> &sizes){
     // create an element to copy so the temporary creation
     // and initialization will not be accounted in a benchmark
-    typename Container::value_type value;
     for(auto size : sizes) {
         Clock::duration duration;
 
