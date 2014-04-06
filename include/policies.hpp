@@ -9,6 +9,7 @@ struct Empty {
     inline static Container make(std::size_t) { 
         return Container(); 
     }
+    inline static void clean(){}
 };
 
 //Prepare data for fill back
