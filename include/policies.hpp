@@ -20,7 +20,7 @@ struct EmptyPrepareBackup {
     inline static Container make(std::size_t size) { 
         if(v.size() != size){
             v.clear();
-            v.resize(size);
+            v.reserve(size);
             for(std::size_t i = 0; i < size; ++i){
                 v.push_back({i});
             }
@@ -53,7 +53,7 @@ struct FilledRandom {
         // prepare randomized data that will have all the integers from the range
         if(v.size() != size){
             v.clear();
-            v.resize(size);
+            v.reserve(size);
             for(std::size_t i = 0; i < size; ++i){
                 v.push_back({i});
             }
@@ -93,7 +93,7 @@ struct BackupSmartFilled {
     inline static std::unique_ptr<Container> make(std::size_t size){
         if(v.size() != size){
             v.clear();
-            v.resize(size);
+            v.reserve(size);
             for(std::size_t i = 0; i < size; ++i){
                 v.push_back({i});
             }
