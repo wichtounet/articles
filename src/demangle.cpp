@@ -1,4 +1,5 @@
 #include <memory>
+#include <stdlib.h>
 
 #include "demangle.hpp"
 
