@@ -38,6 +38,13 @@ bool numeric_cmp(const std::string& lhs, const std::string& rhs){
 void graphs::output(Output output){
     if(output == Output::GOOGLE){
         std::ofstream file("graph.html");
+        
+        file << "<html>" << std::endl;
+        file << "<head>" << std::endl;
+        file << "<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>" << std::endl;
+        file << "<script type=\"text/javascript\">google.load('visualization', '1.0', {'packages':['corechart']});</script>" << std::endl;
+        file << "</head>" << std::endl;
+        file << "<body>" << std::endl;
 
         file << "<script type=\"text/javascript\">" << std::endl;
 
@@ -119,6 +126,9 @@ void graphs::output(Output output){
             file << "<div id=\"graph_" << graph->name << "\" style=\"width: 600px; height: 400px;\"></div>" << std::endl;
             file << "<input id=\"graph_button_" << graph->name << "\" type=\"button\" value=\"Logarithmic scale\">" << std::endl;
         }
+        
+        file << "</body>" << std::endl;
+        file << "</html>" << std::endl;
 
         //...In the land of Google where shadow lies
     } else if (output == Output::PLUGIN) {
