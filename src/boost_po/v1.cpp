@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -36,12 +38,12 @@ int main(int argc, const char* argv[]){
         std::cout << "Compression level " << vm["compression"].as<int>() << std::endl;
     }
 
-if(vm.count("input-files")){
-    std::vector<std::string> files = vm["input-files"].as<std::vector<std::string>>();
-    for(std::string file : files){
-        std::cout << "Input file " << file << std::endl;
+    if(vm.count("input-files")){
+        std::vector<std::string> files = vm["input-files"].as<std::vector<std::string>>();
+        for(std::string file : files){
+            std::cout << "Input file " << file << std::endl;
+        }
     }
-}
 
     return 0;
 }
