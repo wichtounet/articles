@@ -1,5 +1,5 @@
-#ifndef ARTICLES_GRAPHS
-#define ARTICLES_GRAPHS
+#include <cstddef>
+#include <iostream>
 
 static constexpr std::size_t ct_mid(std::size_t a, std::size_t b){
     return (a+b) / 2;
@@ -19,5 +19,8 @@ static constexpr std::size_t ct_sqrt(std::size_t res){
     return ct_sqrt(res, 1, res);
 }
 
+static constexpr const std::size_t result = ct_sqrt(SQRT_VALUE);
 
-#endif
+int main(){
+    std::cout << result << std::endl;
+}
