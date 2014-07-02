@@ -19,6 +19,20 @@ static constexpr std::size_t ct_sqrt(std::size_t res){
     return ct_sqrt(res, 1, res);
 }
 
+static constexpr std::size_t ct_sqrt_14(std::size_t res, std::size_t l, std::size_t r){
+    if(l == r){
+        return r;
+    } else {
+        const auto mid = (r + l) / 2;
+
+        if(mid * mid >= res){
+            return ct_sqrt(res, l, mid);
+        } else {
+            return ct_sqrt(res, mid + 1, r);
+        }
+    }
+}
+
 static constexpr const std::size_t result = ct_sqrt(SQRT_VALUE);
 
 int main(){
