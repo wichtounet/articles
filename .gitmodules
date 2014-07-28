@@ -1,3 +1,7 @@
 [submodule "make-utils"]
 	path = make-utils
 	url = https://github.com/wichtounet/make-utils.git
+[submodule "Catch"]
+	path = Catch
+	url = https://github.com/philsquared/Catch.git
+	branch = master

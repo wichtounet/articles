@@ -7,7 +7,7 @@ include make-utils/cpp-utils.mk
 
 SQRT_VALUE=5000000
 
-CXX_FLAGS += -DSQRT_VALUE=$(SQRT_VALUE)
+CXX_FLAGS += -DSQRT_VALUE=$(SQRT_VALUE) -ICatch/include
 
 $(eval $(call folder_compile,))
 $(eval $(call folder_compile,/boost_po))
@@ -20,11 +20,14 @@ $(eval $(call folder_compile,/threads/part3))
 $(eval $(call folder_compile,/threads/part4))
 $(eval $(call folder_compile,/vector_list))
 $(eval $(call folder_compile,/sqrt))
+$(eval $(call folder_compile,/catch))
 
 $(eval $(call add_executable,sqrt_constexpr,sqrt/constexpr.cpp))
 $(eval $(call add_executable,sqrt_smart_constexpr,sqrt/smart_constexpr.cpp))
 $(eval $(call add_executable,sqrt_tmp,sqrt/tmp.cpp))
 $(eval $(call add_executable,sqrt_smart_tmp,sqrt/smart_tmp.cpp))
+
+$(eval $(call add_executable,catch_test_1,catch/test1.cpp))
 
 $(eval $(call add_executable,threads_p1_hello0,threads/part1/Hello0.cpp))
 $(eval $(call add_executable,threads_p1_hello1,threads/part1/Hello1.cpp))
