@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <thread>
 #include <mutex>
 
@@ -15,12 +22,12 @@ struct Complex {
     void div(int x){
         std::lock_guard<std::mutex> lock(mutex);
         i /= x;
-    } 
+    }
 
     void both(int x, int y){
         std::lock_guard<std::mutex> lock(mutex);
         mul(x);
-        div(y); 
+        div(y);
     }
 };
 
