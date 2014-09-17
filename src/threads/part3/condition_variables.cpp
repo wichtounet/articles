@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -7,16 +14,16 @@
 struct BoundedBuffer {
     int* buffer;
     int capacity;
- 
+
     int front;
     int rear;
     int count;
- 
+
     std::mutex lock;
 
     std::condition_variable not_full;
     std::condition_variable not_empty;
- 
+
     BoundedBuffer(int capacity) : capacity(capacity), front(0), rear(0), count(0) {
         buffer = new int[capacity];
     }
@@ -24,7 +31,7 @@ struct BoundedBuffer {
     ~BoundedBuffer(){
         delete[] buffer;
     }
- 
+
     void deposit(int data){
         std::unique_lock<std::mutex> l(lock);
 
@@ -36,7 +43,7 @@ struct BoundedBuffer {
 
         not_empty.notify_one();
     }
- 
+
     int fetch(){
         std::unique_lock<std::mutex> l(lock);
 

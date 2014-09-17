@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -31,7 +38,7 @@ void bench_lock(){
                 }
             }));
         }
-        
+
         for(auto& thread : threads){
             thread.join();
         }
@@ -65,7 +72,7 @@ void bench_lock_guard(){
                 }
             }));
         }
-        
+
         for(auto& thread : threads){
             thread.join();
         }
@@ -99,7 +106,7 @@ void bench_atomic(){
                 }
             }));
         }
-        
+
         for(auto& thread : threads){
             thread.join();
         }

@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <chrono>
 
 #include "graphs.hpp"
@@ -13,7 +20,7 @@ using Clock = std::chrono::high_resolution_clock;
 // Number of repetitions of each test
 
 static const std::size_t REPEAT = 7;
-  
+
 // variadic policy runner
 
 template<class Container>
@@ -43,7 +50,7 @@ void bench(const std::string& type, const std::initializer_list<int> &sizes){
             auto container = CreatePolicy<Container>::make(size);
 
             Clock::time_point t0 = Clock::now();
-            
+
             run<TestPolicy...>(container, size);
 
             Clock::time_point t1 = Clock::now();
@@ -62,7 +69,7 @@ void bench_types(){
 }
 
 template<template<class> class Benchmark, typename T, typename ...Types>
-void bench_types(){  
+void bench_types(){
     Benchmark<T>::run();
     bench_types<Benchmark, Types...>();
 }

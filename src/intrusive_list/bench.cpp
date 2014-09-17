@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <random>
 #include <array>
 #include <vector>
@@ -19,7 +26,7 @@ struct Normal {
 
     std::size_t a;
     std::array<unsigned char, Size-sizeof(a)> b;
-    
+
     Normal<Size>(){}
     Normal<Size>(std::size_t a) : a(a) {}
 
@@ -109,7 +116,7 @@ struct bench_reverse {
 };
 
 template<typename T>
-struct bench_fill_back { 
+struct bench_fill_back {
     static void run(){
         new_graph<T>("fill_back", "us");
 
@@ -191,10 +198,10 @@ void bench_all(){
 
 int main(){
     bench_all<
-        Normal<8>, 
-        Normal<32>, 
-        Normal<128>, 
-        Normal<1024>>(); 
+        Normal<8>,
+        Normal<32>,
+        Normal<128>,
+        Normal<1024>>();
         //Normal<4096>>();
 
     graphs::output(graphs::Output::PLUGIN);

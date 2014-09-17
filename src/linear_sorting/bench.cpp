@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <random>
 #include <array>
 #include <vector>
@@ -20,7 +27,7 @@ void fill_random(std::vector<std::size_t>& vec, std::size_t size){
     std::uniform_int_distribution<std::size_t> distribution(0, MAX);
 
     for(std::size_t i = 0; i < size; ++i){
-        vec.push_back(distribution(generator));    
+        vec.push_back(distribution(generator));
     }
 }
 
@@ -44,7 +51,7 @@ void std_sort(std::vector<std::size_t>& A){
 
 void in_place_counting_sort(std::vector<std::size_t>& A){
     std::vector<std::size_t> C(MAX + 1);
-    
+
     for (std::size_t i = 0; i < SIZE; ++i){
         ++C[A[i]];
     }
@@ -60,7 +67,7 @@ void in_place_counting_sort(std::vector<std::size_t>& A){
 void counting_sort(std::vector<std::size_t>& A){
     std::vector<std::size_t> B(SIZE);
     std::vector<std::size_t> C(MAX);
-    
+
     for (std::size_t i = 0; i < SIZE; ++i){
         ++C[A[i]];
     }
@@ -103,7 +110,7 @@ static const std::size_t mask = radix - 1;
 void radix_sort(std::vector<std::size_t>& A){
     std::vector<std::size_t> B(SIZE);
     std::vector<std::size_t> cnt(radix);
-    
+
     for(std::size_t i = 0, shift = 0; i < digits; i++, shift += r){
         for(std::size_t j = 0; j < radix; ++j){
             cnt[j] = 0;
@@ -112,7 +119,7 @@ void radix_sort(std::vector<std::size_t>& A){
         for(std::size_t j = 0; j < SIZE; ++j){
             ++cnt[(A[j] >> shift) & mask];
         }
-        
+
         for(std::size_t j = 1; j < radix; ++j){
             cnt[j] += cnt[j - 1];
         }
@@ -122,7 +129,7 @@ void radix_sort(std::vector<std::size_t>& A){
         }
 
         for(std::size_t j = 0; j < SIZE; ++j){
-           A[j] = B[j]; 
+           A[j] = B[j];
         }
     }
 }
@@ -130,7 +137,7 @@ void radix_sort(std::vector<std::size_t>& A){
 template<typename Function>
 void bench(Function sort_function){
     std::array<std::vector<std::size_t>, REPEAT> vec;
-    
+
     for(std::size_t i = 0; i < REPEAT; ++i){
         fill_random(vec[i], SIZE);
     }
@@ -140,7 +147,7 @@ void bench(Function sort_function){
     for(std::size_t i = 0; i < REPEAT; ++i){
         sort_function(vec[i]);
     }
-    
+
     Clock::time_point t1 = Clock::now();
     milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
 
@@ -154,16 +161,16 @@ void bench(Function sort_function){
 int main(){
     std::cout << "std::sort" << std::endl;
     bench(&std_sort);
-    
+
     std::cout << "counting_sort" << std::endl;
     bench(&counting_sort);
 
     std::cout << "in_place_counting_sort" << std::endl;
     bench(&in_place_counting_sort);
-    
+
     std::cout << "binsort" << std::endl;
     bench(&::binsort);
-    
+
     std::cout << "radix_sort" << std::endl;
     bench(&radix_sort);
 

@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
@@ -16,7 +23,7 @@ void graphs::new_graph(const std::string& graph_name, const std::string& graph_t
 }
 
 void graphs::new_result(const std::string& serie, const std::string& group, std::size_t value){
-    current_graph->results.push_back({serie, group, value}); 
+    current_graph->results.push_back({serie, group, value});
 
     std::cout << serie << ":" << group << ":" << value << std::endl;
 }
@@ -38,7 +45,7 @@ bool numeric_cmp(const std::string& lhs, const std::string& rhs){
 void graphs::output(Output output){
     if(output == Output::GOOGLE){
         std::ofstream file("graph.html");
-        
+
         file << "<html>" << std::endl;
         file << "<head>" << std::endl;
         file << "<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>" << std::endl;
@@ -53,7 +60,7 @@ void graphs::output(Output output){
             file << "function draw_" << graph->name << "(){" << std::endl;
 
             file << "var data = google.visualization.arrayToDataTable([" << std::endl;
-            
+
             //['x', 'Cats', 'Blanket 1', 'Blanket 2'],
             auto results = compute_values(graph);
 
@@ -85,7 +92,7 @@ void graphs::output(Output output){
             }
 
             file << "]);" << std::endl;
-        
+
             file << "var graph = new google.visualization.LineChart(document.getElementById('graph_" << graph->name <<"'));" << std::endl
                  << "var options = {curveType: \"function\","
                  << "title: \"" << graph->title << "\","
@@ -126,7 +133,7 @@ void graphs::output(Output output){
             file << "<div id=\"graph_" << graph->name << "\" style=\"width: 600px; height: 400px;\"></div>" << std::endl;
             file << "<input id=\"graph_button_" << graph->name << "\" type=\"button\" value=\"Logarithmic scale\">" << std::endl;
         }
-        
+
         file << "</body>" << std::endl;
         file << "</html>" << std::endl;
 
@@ -136,9 +143,9 @@ void graphs::output(Output output){
 
         //One function to rule them all
         for(auto& graph : all_graphs){
-            file << "[line_chart width=\"600px\" height=\"400px\" scale_button=\"true\" title=\"" << graph->title 
+            file << "[line_chart width=\"600px\" height=\"400px\" scale_button=\"true\" title=\"" << graph->title
                 << "\" h_title=\"Number of elements\" v_title=\"" << graph->unit << "\"]" << std::endl;
-            
+
             //['x', 'Cats', 'Blanket 1', 'Blanket 2'],
             auto results = compute_values(graph);
 

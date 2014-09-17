@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <thread>
 #include <iostream>
 #include <vector>
@@ -5,7 +12,7 @@
 
 struct Counter {
     int value;
-    
+
     Counter() : value(0) {}
 
     void increment(){

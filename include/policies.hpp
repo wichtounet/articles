@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <boost/intrusive/list.hpp>
 
 // create policies
@@ -6,8 +13,8 @@
 
 template<class Container>
 struct Empty {
-    inline static Container make(std::size_t) { 
-        return Container(); 
+    inline static Container make(std::size_t) {
+        return Container();
     }
     inline static void clean(){}
 };
@@ -17,7 +24,7 @@ struct Empty {
 template<class Container>
 struct EmptyPrepareBackup {
     static std::vector<typename Container::value_type> v;
-    inline static Container make(std::size_t size) { 
+    inline static Container make(std::size_t size) {
         if(v.size() != size){
             v.clear();
             v.reserve(size);
@@ -26,7 +33,7 @@ struct EmptyPrepareBackup {
             }
         }
 
-        return Container(); 
+        return Container();
     }
 
     inline static void clean(){
@@ -40,12 +47,12 @@ std::vector<typename Container::value_type> EmptyPrepareBackup<Container>::v;
 
 template<class Container>
 struct Filled {
-    inline static Container make(std::size_t size) { 
-        return Container(size); 
+    inline static Container make(std::size_t size) {
+        return Container(size);
     }
     inline static void clean(){}
 };
-  
+
 template<class Container>
 struct FilledRandom {
     static std::vector<typename Container::value_type> v;
@@ -77,16 +84,16 @@ struct FilledRandom {
 
 template<class Container>
 std::vector<typename Container::value_type> FilledRandom<Container>::v;
-  
+
 template<class Container>
 struct SmartFilled {
     inline static std::unique_ptr<Container> make(std::size_t size){
         return std::unique_ptr<Container>(new Container(size));
     }
-    
+
     inline static void clean(){}
 };
-  
+
 template<class Container>
 struct BackupSmartFilled {
     static std::vector<typename Container::value_type> v;
@@ -125,20 +132,20 @@ struct NoOp {
         //Nothing
     }
 };
-  
+
 template<class Container>
 struct ReserveSize {
     inline static void run(Container &c, std::size_t size){
         c.reserve(size);
     }
 };
-  
+
 template<class Container>
 struct FillBack {
     static const typename Container::value_type value;
     inline static void run(Container &c, std::size_t size){
         for(size_t i=0; i<size; ++i){
-            c.push_back(value); 
+            c.push_back(value);
         }
     }
 };
@@ -149,11 +156,11 @@ template<class Container>
 struct FillBackBackup {
     inline static void run(Container &c, std::size_t size){
         for(size_t i=0; i<size; ++i){
-            c.push_back(EmptyPrepareBackup<Container>::v[i]); 
+            c.push_back(EmptyPrepareBackup<Container>::v[i]);
         }
     }
 };
-  
+
 template<class Container>
 struct FillBackInserter {
     static const typename Container::value_type value;
@@ -163,7 +170,7 @@ struct FillBackInserter {
 };
 
 template<class Container> const typename Container::value_type FillBackInserter<Container>::value{};
-  
+
 template<class Container>
 struct EmplaceBack {
     inline static void run(Container &c, std::size_t size){
@@ -172,7 +179,7 @@ struct EmplaceBack {
         }
     }
 };
-  
+
 template<class Container>
 struct FillFront {
     static const typename Container::value_type value;
@@ -182,7 +189,7 @@ struct FillFront {
 };
 
 template<class Container> const typename Container::value_type FillFront<Container>::value{};
-  
+
 template<class T>
 struct FillFront<std::vector<T> > {
     static const T value;
@@ -194,25 +201,25 @@ struct FillFront<std::vector<T> > {
 };
 
 template<class T> const T FillFront<std::vector<T> >::value{};
-  
+
 template<class Container>
 struct EmplaceFront {
-    inline static void run(Container &c, std::size_t size){ 
+    inline static void run(Container &c, std::size_t size){
         for(size_t i=0; i<size; ++i){
-            c.emplace_front(); 
+            c.emplace_front();
         }
     }
 };
-  
+
 template<class T>
 struct EmplaceFront<std::vector<T> > {
-    inline static void run(std::vector<T> &c, std::size_t size){ 
+    inline static void run(std::vector<T> &c, std::size_t size){
         for(std::size_t i=0; i<size; ++i){
-            c.emplace(begin(c)); 
+            c.emplace(begin(c));
         }
     }
 };
-  
+
 template<class Container>
 struct Find {
     inline static void run(Container &c, std::size_t size){
@@ -222,7 +229,7 @@ struct Find {
         }
     }
 };
-  
+
 template<class Container>
 struct Insert {
     static std::array<typename Container::value_type, 1000> values;
@@ -249,7 +256,7 @@ struct Write {
         }
     }
 };
-  
+
 template<class Container>
 struct Iterate {
     inline static void run(Container &c, std::size_t){
@@ -261,7 +268,7 @@ struct Iterate {
         }
     }
 };
-  
+
 template<class Container>
 struct Erase {
     inline static void run(Container &c, std::size_t){
@@ -271,7 +278,7 @@ struct Erase {
         }
     }
 };
-  
+
 template<class Container>
 struct RemoveErase {
     inline static void run(Container &c, std::size_t){
@@ -283,21 +290,21 @@ struct RemoveErase {
 };
 
 //Sort the container
-  
+
 template<class Container>
 struct Sort {
     inline static void run(Container &c, std::size_t){
         std::sort(c.begin(), c.end());
     }
 };
-  
+
 template<class T>
 struct Sort<std::list<T> > {
     inline static void run(std::list<T> &c, std::size_t){
         c.sort();
     }
 };
- 
+
 template<class T>
 struct Sort<boost::intrusive::list<T, boost::intrusive::constant_time_size<false>>> {
     inline static void run(boost::intrusive::list<T, boost::intrusive::constant_time_size<false>>& c, std::size_t){
@@ -306,21 +313,21 @@ struct Sort<boost::intrusive::list<T, boost::intrusive::constant_time_size<false
 };
 
 //Reverse the container
-  
+
 template<class Container>
 struct Reverse {
     inline static void run(Container &c, std::size_t){
         std::reverse(c.begin(), c.end());
     }
 };
-  
+
 template<class T>
 struct Reverse<std::list<T> > {
     inline static void run(std::list<T> &c, std::size_t){
         c.reverse();
     }
 };
- 
+
 template<class T>
 struct Reverse<boost::intrusive::list<T, boost::intrusive::constant_time_size<false>>> {
     inline static void run(boost::intrusive::list<T, boost::intrusive::constant_time_size<false>>& c, std::size_t){

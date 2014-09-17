@@ -1,3 +1,10 @@
+//=======================================================================
+// Copyright (c) 2014 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
 #include <random>
 #include <array>
 #include <vector>
@@ -16,51 +23,51 @@
 namespace {
 
 template<typename T>
-constexpr bool is_trivial_of_size(std::size_t size){ 
-    return std::is_trivial<T>::value && sizeof(T) == size; 
+constexpr bool is_trivial_of_size(std::size_t size){
+    return std::is_trivial<T>::value && sizeof(T) == size;
 }
 
 template<typename T>
-constexpr bool is_non_trivial_of_size(std::size_t size){ 
-    return 
-            !std::is_trivial<T>::value 
-        &&  sizeof(T) == size 
+constexpr bool is_non_trivial_of_size(std::size_t size){
+    return
+            !std::is_trivial<T>::value
+        &&  sizeof(T) == size
         &&  std::is_copy_constructible<T>::value
-        &&  std::is_copy_assignable<T>::value 
-        &&  std::is_move_constructible<T>::value 
-        &&  std::is_move_assignable<T>::value; 
+        &&  std::is_copy_assignable<T>::value
+        &&  std::is_move_constructible<T>::value
+        &&  std::is_move_assignable<T>::value;
 }
 
 template<typename T>
-constexpr bool is_non_trivial_nothrow_movable(){ 
-    return 
+constexpr bool is_non_trivial_nothrow_movable(){
+    return
             !std::is_trivial<T>::value
         &&  std::is_nothrow_move_constructible<T>::value
-        &&  std::is_nothrow_move_assignable<T>::value; 
+        &&  std::is_nothrow_move_assignable<T>::value;
 }
 
 template<typename T>
-constexpr bool is_non_trivial_non_nothrow_movable(){ 
-    return 
+constexpr bool is_non_trivial_non_nothrow_movable(){
+    return
             !std::is_trivial<T>::value
         &&  std::is_move_constructible<T>::value
         &&  std::is_move_assignable<T>::value
         &&  !std::is_nothrow_move_constructible<T>::value
-        &&  !std::is_nothrow_move_assignable<T>::value; 
+        &&  !std::is_nothrow_move_assignable<T>::value;
 }
 
 template<typename T>
-constexpr bool is_non_trivial_non_movable(){ 
-    return 
-            !std::is_trivial<T>::value  
-        &&  std::is_copy_constructible<T>::value 
-        &&  std::is_copy_assignable<T>::value 
-        &&  !std::is_move_constructible<T>::value 
+constexpr bool is_non_trivial_non_movable(){
+    return
+            !std::is_trivial<T>::value
+        &&  std::is_copy_constructible<T>::value
+        &&  std::is_copy_assignable<T>::value
+        &&  !std::is_move_constructible<T>::value
         &&  !std::is_move_assignable<T>::value;
 }
 
 template<typename T>
-constexpr bool is_small(){ 
+constexpr bool is_small(){
    return sizeof(T) <= sizeof(std::size_t);
 }
 
@@ -87,20 +94,20 @@ class NonTrivialStringMovable {
     private:
         std::string data{"some pretty long string to make sure it is not optimized with SSO"};
 
-    public: 
+    public:
         std::size_t a{0};
         NonTrivialStringMovable() = default;
         NonTrivialStringMovable(std::size_t a): a(a) {}
         ~NonTrivialStringMovable() = default;
         bool operator<(const NonTrivialStringMovable &other) const { return a < other.a; }
 };
-  
+
 // non trivial, quite expensive to copy but easy to move (with noexcept)
 class NonTrivialStringMovableNoExcept {
     private:
         std::string data{"some pretty long string to make sure it is not optimized with SSO"};
 
-    public: 
+    public:
         std::size_t a{0};
         NonTrivialStringMovableNoExcept() = default;
         NonTrivialStringMovableNoExcept(std::size_t a): a(a) {}
@@ -115,7 +122,7 @@ class NonTrivialStringMovableNoExcept {
         }
         bool operator<(const NonTrivialStringMovableNoExcept &other) const { return a < other.a; }
 };
-  
+
 // non trivial, quite expensive to copy and move
 template<int N>
 class NonTrivialArray {
@@ -124,7 +131,7 @@ class NonTrivialArray {
 
     private:
         std::array<unsigned char, N-sizeof(a)> b;
-    
+
     public:
         NonTrivialArray() = default;
         NonTrivialArray(std::size_t a): a(a) {}
@@ -148,7 +155,7 @@ static_assert(is_non_trivial_of_size<NonTrivialArrayMedium>(32), "Invalid type")
 // Define all benchmarks
 
 template<typename T>
-struct bench_fill_back { 
+struct bench_fill_back {
     static void run(){
         new_graph<T>("fill_back", "us");
 
@@ -179,9 +186,9 @@ template<typename T>
 struct bench_fill_front {
     static void run(){
         new_graph<T>("fill_front", "us");
-        
+
         auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
-        
+
         // it is too slow with bigger data types
         if(is_small<T>()){
             bench<std::vector<T>, microseconds, Empty, FillFront>("vector", sizes);
@@ -198,7 +205,7 @@ struct bench_emplace_front {
         new_graph<T>("emplace_front", "us");
 
         auto sizes = { 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 };
-        
+
         // it is too slow with bigger data types
         if(is_small<T>()){
             bench<std::vector<T>, microseconds, Empty, EmplaceFront>("vector", sizes);
@@ -269,7 +276,7 @@ struct bench_destruction {
         bench<std::deque<T>,  microseconds, SmartFilled, SmartDelete>("deque",  sizes);
     }
 };
-  
+
 template<typename T>
 struct bench_number_crunching {
     static void run(){
@@ -303,12 +310,12 @@ void bench_all(){
 int main(){
     //Launch all the graphs
     bench_all<
-        TrivialSmall, 
-        TrivialMedium, 
-        TrivialLarge, 
-        TrivialHuge, 
+        TrivialSmall,
+        TrivialMedium,
+        TrivialLarge,
+        TrivialHuge,
         TrivialMonster,
-        NonTrivialStringMovable, 
+        NonTrivialStringMovable,
         NonTrivialStringMovableNoExcept,
         NonTrivialArray<32> >();
 
