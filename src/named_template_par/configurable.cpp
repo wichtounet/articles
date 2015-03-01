@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <type_traits>
+#include <iostream>
 
 enum class type {
     AAA,
@@ -13,14 +14,30 @@ enum class type {
     CCC
 };
 
-struct watcher_1 {};
-struct watcher_2 {};
+struct watcher_1 {
+    static std::string name(){
+        return "watcher_1";
+    }
+};
+struct watcher_2 {
+    static std::string name(){
+        return "watcher_2";
+    }
+};
 
 template<typename C>
-struct trainer_1 {};
+struct trainer_1 {
+    static std::string name(){
+        return "trainer_1";
+    }
+};
 
 template<typename C>
-struct trainer_2 {};
+struct trainer_2 {
+    static std::string name(){
+        return "trainer_2";
+    }
+};
 
 template<int T_A = 1, char T_B = 'b', type T_C = type::BBB, bool T_D = false, typename T_E = watcher_1, template<typename> class T_F = trainer_1>
 struct configurable_v1 {
@@ -108,6 +125,9 @@ struct f : template_type_conf_t<f_id, T> {};
 template<typename D, typename... Args>
 struct get_value_int;
 
+template<typename D>
+struct get_value_int<D> : std::integral_constant<int, D::value> {};
+
 template<typename D, typename T2, typename... Args>
 struct get_value_int<D, T2, Args...> {
     template<typename D2, typename T22, typename Enable = void>
@@ -121,9 +141,6 @@ struct get_value_int<D, T2, Args...> {
     static constexpr const int value = impl<D, T2>::value;
 };
 
-template<typename D>
-struct get_value_int<D> : std::integral_constant<int, D::value> {};
-
 
 template<typename D, typename... Args>
 struct get_value;
@@ -132,11 +149,11 @@ template<typename D, typename T2, typename... Args>
 struct get_value<D, T2, Args...> {
     template<typename D2, typename T22, typename Enable = void>
     struct impl 
-        : std::integral_constant<int, get_value<D, Args...>::value> {};
+        : std::integral_constant<decltype(D::value), get_value<D, Args...>::value> {};
 
     template<typename D2, typename T22>
     struct impl <D2, T22, std::enable_if_t<std::is_same<typename D2::type_id, typename T22::type_id>::value>> 
-        : std::integral_constant<decltype(T22::value), T22::value> {};
+        : std::integral_constant<decltype(D::value), T22::value> {};
 
     static constexpr const auto value = impl<D, T2>::value;
 };
@@ -177,23 +194,23 @@ struct get_template_type<D, T2, Args...> {
     template<typename D2, typename T22, typename Enable = void>
     struct impl {
         template<typename C>
-        using value = typename get_template_type<D, Args...>::value;
+        using value = typename get_template_type<D, Args...>::template value<C>;
     };
 
     template<typename D2, typename T22>
     struct impl <D2, T22, std::enable_if_t<std::is_same<typename D2::type_id, typename T22::type_id>::value>> {
         template<typename C>
-        using value = typename T22::value;
+        using value = typename T22::template value<C>;
     };
 
     template<typename C>
-    using value = typename impl<D, T2>::value;
+    using value = typename impl<D, T2>::template value<C>;
 };
 
 template<typename D>
 struct get_template_type<D> {
     template<typename C>
-    using value = typename D::value;
+    using value = typename D::template value<C>;
 };
 
 
@@ -249,6 +266,19 @@ struct configurable_v2 {
 int main(){
     using configurable_v1_t = configurable_v1<100, 'z', type::CCC, true, watcher_2, trainer_2>;
     using configurable_v2_t = configurable_v2<a<100>, b<'z'>, c<type::CCC>, d, e<watcher_2>, f<trainer_2>>;
+
+    std::cout << configurable_v1_t::A << std::endl;
+    std::cout << configurable_v2_t::A << std::endl;
+    std::cout << configurable_v1_t::B << std::endl;
+    std::cout << configurable_v2_t::B << std::endl;
+    std::cout << static_cast<std::size_t>(configurable_v1_t::C) << std::endl;
+    std::cout << static_cast<std::size_t>(configurable_v2_t::C)<< std::endl;
+    std::cout << configurable_v1_t::D << std::endl;
+    std::cout << configurable_v2_t::D << std::endl;
+    std::cout << configurable_v1_t::E::name() << std::endl;
+    std::cout << configurable_v2_t::E::name() << std::endl;
+    std::cout << configurable_v1_t::template F<int>::name() << std::endl;
+    std::cout << configurable_v2_t::template F<int>::name() << std::endl;
 
     //TODO
 
