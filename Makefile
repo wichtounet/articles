@@ -7,6 +7,7 @@ include make-utils/cpp-utils.mk
 
 SQRT_VALUE=5000000
 
+CXX_FLAGS += -Wno-missing-field-initializers
 CXX_FLAGS += -DSQRT_VALUE=$(SQRT_VALUE) -ICatch/include
 
 $(eval $(call src_folder_compile,))
