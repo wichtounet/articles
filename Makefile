@@ -7,8 +7,12 @@ include make-utils/cpp-utils.mk
 
 SQRT_VALUE=5000000
 
-CXX_FLAGS += -Wno-missing-field-initializers
+WARNING_FLAGS += -Wno-missing-field-initializers
 CXX_FLAGS += -DSQRT_VALUE=$(SQRT_VALUE) -ICatch/include
+
+ifneq (,$(CLANG_USE_LIBCXX))
+$(eval $(call use_libcxx))
+endif
 
 $(eval $(call src_folder_compile,))
 $(eval $(call src_folder_compile,/boost_po))
