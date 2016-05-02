@@ -44,7 +44,7 @@ void bench(const std::string& type, const std::initializer_list<int> &sizes){
     // create an element to copy so the temporary creation
     // and initialization will not be accounted in a benchmark
     for(auto size : sizes) {
-        Clock::duration duration;
+        std::size_t duration = 0;
 
         for(std::size_t i=0; i<REPEAT; ++i) {
             auto container = CreatePolicy<Container>::make(size);
@@ -54,10 +54,10 @@ void bench(const std::string& type, const std::initializer_list<int> &sizes){
             run<TestPolicy...>(container, size);
 
             Clock::time_point t1 = Clock::now();
-            duration += t1 - t0;
+            duration += std::chrono::duration_cast<DurationUnit>(t1 - t0).count();
         }
 
-        graphs::new_result(type, std::to_string(size), std::chrono::duration_cast<DurationUnit>(duration).count() / REPEAT);
+        graphs::new_result(type, std::to_string(size), duration / REPEAT);
     }
 
     CreatePolicy<Container>::clean();
