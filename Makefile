@@ -35,24 +35,24 @@ $(eval $(call add_src_executable,sqrt_smart_tmp,sqrt/smart_tmp.cpp))
 
 $(eval $(call add_src_executable,catch_test_1,catch/test1.cpp))
 
-$(eval $(call add_src_executable,threads_p1_hello0,threads/part1/Hello0.cpp))
-$(eval $(call add_src_executable,threads_p1_hello1,threads/part1/Hello1.cpp))
-$(eval $(call add_src_executable,threads_p1_hello2,threads/part1/Hello2.cpp))
+$(eval $(call add_src_executable,threads_p1_hello0,threads/part1/Hello0.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p1_hello1,threads/part1/Hello1.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p1_hello2,threads/part1/Hello2.cpp,-pthread))
 
-$(eval $(call add_src_executable,threads_p2_counter1,threads/part2/Unsafe.cpp))
-$(eval $(call add_src_executable,threads_p2_counter2,threads/part2/Safe.cpp))
-$(eval $(call add_src_executable,threads_p2_counter3,threads/part2/Exception.cpp))
-$(eval $(call add_src_executable,threads_p2_counter4,threads/part2/SafeGuard.cpp))
+$(eval $(call add_src_executable,threads_p2_counter1,threads/part2/Unsafe.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p2_counter2,threads/part2/Safe.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p2_counter3,threads/part2/Exception.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p2_counter4,threads/part2/SafeGuard.cpp,-pthread))
 
-$(eval $(call add_src_executable,threads_p3_recursive,threads/part3/recursive_problem.cpp))
-$(eval $(call add_src_executable,threads_p3_recursive2,threads/part3/recursive_mutex.cpp))
-$(eval $(call add_src_executable,threads_p3_timed,threads/part3/timed_mutex.cpp))
-$(eval $(call add_src_executable,threads_p3_call_once,threads/part3/call_once.cpp))
-$(eval $(call add_src_executable,threads_p3_condition_variables,threads/part3/condition_variables.cpp))
+$(eval $(call add_src_executable,threads_p3_recursive,threads/part3/recursive_problem.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p3_recursive2,threads/part3/recursive_mutex.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p3_timed,threads/part3/timed_mutex.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p3_call_once,threads/part3/call_once.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p3_condition_variables,threads/part3/condition_variables.cpp,-pthread))
 
-$(eval $(call add_src_executable,threads_p4_atomic_counter,threads/part4/AtomicCounter.cpp))
+$(eval $(call add_src_executable,threads_p4_atomic_counter,threads/part4/AtomicCounter.cpp,-pthread))
 
-$(eval $(call add_src_executable,threads_bench,threads/benchmark/bench.cpp))
+$(eval $(call add_src_executable,threads_bench,threads/benchmark/bench.cpp,-pthread))
 
 $(eval $(call add_src_executable,linear_sorting,linear_sorting/bench.cpp))
 
