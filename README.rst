@@ -11,6 +11,10 @@ You can get the source with Git::
     git clone --recursive https://github.com/wichtounet/articles.git
 
 and then, several targets are available to build the different source projects.
+
+You need to set the variable CXX to a valid C++ compiler for make to work
+correctly.
+
 The default target build all the projects::
 
     make
