@@ -86,9 +86,41 @@ template<class Container>
 std::vector<typename Container::value_type> FilledRandom<Container>::v;
 
 template<class Container>
+struct FilledRandomInsert {
+    static std::vector<typename Container::value_type> v;
+    inline static Container make(std::size_t size){
+        // prepare randomized data that will have all the integers from the range
+        if(v.size() != size){
+            v.clear();
+            v.reserve(size);
+            for(std::size_t i = 0; i < size; ++i){
+                v.push_back({i});
+            }
+            std::shuffle(begin(v), end(v), std::mt19937());
+        }
+
+        // fill with randomized data
+        Container container;
+        for(std::size_t i = 0; i < size; ++i){
+            container.insert(v[i]);
+        }
+
+        return container;
+    }
+
+    inline static void clean(){
+        v.clear();
+        v.shrink_to_fit();
+    }
+};
+
+template<class Container>
+std::vector<typename Container::value_type> FilledRandomInsert<Container>::v;
+
+template<class Container>
 struct SmartFilled {
     inline static std::unique_ptr<Container> make(std::size_t size){
-        return std::unique_ptr<Container>(new Container(size));
+        return std::unique_ptr<Container>(new Container(size, typename Container::value_type()));
     }
 
     inline static void clean(){}
@@ -141,6 +173,19 @@ struct ReserveSize {
 };
 
 template<class Container>
+struct InsertSimple {
+    static const typename Container::value_type value;
+    inline static void run(Container &c, std::size_t size){
+        for(size_t i=0; i<size; ++i){
+            c.insert(value);
+        }
+    }
+};
+
+template<class Container>
+const typename Container::value_type InsertSimple<Container>::value{};
+
+template<class Container>
 struct FillBack {
     static const typename Container::value_type value;
     inline static void run(Container &c, std::size_t size){
@@ -150,7 +195,8 @@ struct FillBack {
     }
 };
 
-template<class Container> const typename Container::value_type FillBack<Container>::value{};
+template <class Container>
+const typename Container::value_type FillBack<Container>::value{};
 
 template<class Container>
 struct FillBackBackup {
@@ -176,6 +222,15 @@ struct EmplaceBack {
     inline static void run(Container &c, std::size_t size){
         for(size_t i=0; i<size; ++i){
             c.emplace_back();
+        }
+    }
+};
+
+template<class Container>
+struct EmplaceInsertSimple {
+    inline static void run(Container &c, std::size_t size){
+        for(size_t i=0; i<size; ++i){
+            c.emplace();
         }
     }
 };

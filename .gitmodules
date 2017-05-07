@@ -5,3 +5,6 @@
 	path = Catch
 	url = https://github.com/philsquared/Catch.git
 	branch = master
+[submodule "plf_colony"]
+	path = plf_colony
+	url = https://github.com/mattreecebentley/plf_colony.git

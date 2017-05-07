@@ -24,6 +24,7 @@ $(eval $(call src_folder_compile,/threads/part2))
 $(eval $(call src_folder_compile,/threads/part3))
 $(eval $(call src_folder_compile,/threads/part4))
 $(eval $(call src_folder_compile,/vector_list))
+$(eval $(call src_folder_compile,/vector_list_update_1,-Iplf_colony))
 $(eval $(call src_folder_compile,/sqrt))
 $(eval $(call src_folder_compile,/catch))
 $(eval $(call src_folder_compile,/named_template_par))
@@ -59,6 +60,7 @@ $(eval $(call add_src_executable,linear_sorting,linear_sorting/bench.cpp))
 $(eval $(call add_src_executable,boost_po_v1,boost_po/v1.cpp,-lboost_program_options))
 
 $(eval $(call add_src_executable,vector_list,vector_list/bench.cpp graphs.cpp demangle.cpp))
+$(eval $(call add_src_executable,vector_list_update_1,vector_list_update_1/bench.cpp graphs.cpp demangle.cpp))
 
 $(eval $(call add_src_executable,intrusive_list,intrusive_list/bench.cpp graphs.cpp demangle.cpp))
 
@@ -73,10 +75,11 @@ $(eval $(call add_executable_set,linear_sorting,linear_sorting))
 $(eval $(call add_executable_set,boost_po_v1,boost_po_v1))
 $(eval $(call add_executable_set,intrusive_list,intrusive_list))
 $(eval $(call add_executable_set,vector_list,vector_list))
+$(eval $(call add_executable_set,vector_list_update_1,vector_list_update_1))
 $(eval $(call add_executable_set,named_tmp,named_tmp))
 
-release: release_threads_p1 release_threads_p2 release_threads_p3 release_threads_p4 release_threads_bench release_linear_sorting release_boost_po_v1 release_vector_list release_intrusive_list
-debug: debug_threads_p1 debug_threads_p2 debug_threads_p3 debug_threads_p4 debug_threads_bench debug_linear_sorting debug_boost_po_v1 debug_vector_list debug_intrusive_list
+release: release_threads_p1 release_threads_p2 release_threads_p3 release_threads_p4 release_threads_bench release_linear_sorting release_boost_po_v1 release_vector_list release_vector_list_update_1 release_intrusive_list
+debug: debug_threads_p1 debug_threads_p2 debug_threads_p3 debug_threads_p4 debug_threads_bench debug_linear_sorting debug_boost_po_v1 debug_vector_list debug_vector_list_update_1 debug_intrusive_list
 
 all: release debug
 
