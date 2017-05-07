@@ -171,6 +171,8 @@ struct bench_fill_back {
     }
 };
 
+//TODO Add multiset to the benchmarks
+
 template<typename T>
 struct bench_emplace_back {
     static void run(){
@@ -256,6 +258,7 @@ struct bench_random_remove {
         bench<std::list<T>,   milliseconds, FilledRandom, Erase>("list",   sizes);
         bench<std::deque<T>,  milliseconds, FilledRandom, Erase>("deque",  sizes);
         bench<std::vector<T>, milliseconds, FilledRandom, RemoveErase>("vector_rem", sizes);
+        //TODO Find a way to add colony here
     }
 };
 
@@ -297,6 +300,8 @@ struct bench_number_crunching {
         // colony is unordered
     }
 };
+
+//TODO Add real life scenario 85% read a lot, 10% insertions, 5% removes
 
 //Launch the benchmark
 
