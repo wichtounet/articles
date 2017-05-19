@@ -257,8 +257,8 @@ struct bench_random_remove {
         bench<std::vector<T>, milliseconds, FilledRandom, Erase>("vector", sizes);
         bench<std::list<T>,   milliseconds, FilledRandom, Erase>("list",   sizes);
         bench<std::deque<T>,  milliseconds, FilledRandom, Erase>("deque",  sizes);
+        bench<plf::colony<T>,  milliseconds, FilledRandomInsert, Erase>("colony",  sizes);
         bench<std::vector<T>, milliseconds, FilledRandom, RemoveErase>("vector_rem", sizes);
-        //TODO Find a way to add colony here
     }
 };
 
@@ -301,7 +301,96 @@ struct bench_number_crunching {
     }
 };
 
-//TODO Add real life scenario 85% read a lot, 10% insertions, 5% removes
+template<typename T>
+struct bench_erase_1 {
+    static void run(){
+        new_graph<T>("erase1", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, RandomErase1>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, RandomErase1>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, RandomErase1>("deque",  sizes);
+        bench<plf::colony<T>,  microseconds, FilledRandomInsert, RandomErase1>("colony",  sizes);
+    }
+};
+
+template<typename T>
+struct bench_erase_10 {
+    static void run(){
+        new_graph<T>("erase10", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, RandomErase10>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, RandomErase10>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, RandomErase10>("deque",  sizes);
+        bench<plf::colony<T>,  microseconds, FilledRandomInsert, RandomErase10>("colony",  sizes);
+    }
+};
+
+template<typename T>
+struct bench_erase_25 {
+    static void run(){
+        new_graph<T>("erase25", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, RandomErase25>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, RandomErase25>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, RandomErase25>("deque",  sizes);
+        bench<plf::colony<T>,  microseconds, FilledRandomInsert, RandomErase25>("colony",  sizes);
+    }
+};
+
+template<typename T>
+struct bench_erase_50 {
+    static void run(){
+        new_graph<T>("erase50", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, RandomErase50>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, RandomErase50>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, RandomErase50>("deque",  sizes);
+        bench<plf::colony<T>,  microseconds, FilledRandomInsert, RandomErase50>("colony",  sizes);
+    }
+};
+
+template<typename T>
+struct bench_traversal {
+    static void run(){
+        new_graph<T>("traversal", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, Iterate>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, Iterate>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, Iterate>("deque",  sizes);
+        bench<plf::colony<T>, microseconds, FilledRandomInsert, Iterate>("colony",  sizes);
+    }
+};
+
+template<typename T>
+struct bench_write {
+    static void run(){
+        new_graph<T>("erase50", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, Write>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, Write>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, Write>("deque",  sizes);
+        bench<plf::colony<T>, microseconds, FilledRandomInsert, Write>("colony",  sizes);
+    }
+};
+
+template<typename T>
+struct bench_find {
+    static void run(){
+        new_graph<T>("erase50", "us");
+
+        auto sizes = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+        bench<std::vector<T>, microseconds, FilledRandom, Find>("vector", sizes);
+        bench<std::list<T>,   microseconds, FilledRandom, Find>("list",   sizes);
+        bench<std::deque<T>,  microseconds, FilledRandom, Find>("deque",  sizes);
+        bench<plf::colony<T>, microseconds, FilledRandomInsert, Find>("colony",  sizes);
+    }
+};
 
 //Launch the benchmark
 
@@ -316,8 +405,14 @@ void bench_all(){
     bench_types<bench_random_remove,    Types...>();
     bench_types<bench_sort,             Types...>();
     bench_types<bench_destruction,      Types...>();
+    bench_types<bench_erase_1,          Types...>();
+    bench_types<bench_erase_10,         Types...>();
+    bench_types<bench_erase_25,         Types...>();
+    bench_types<bench_erase_50,         Types...>();
+    bench_types<bench_write,            Types...>();
 
-    // it is really slow so run only for limited set of data
+    // The following are really slow so run only for limited set of data
+    bench_types<bench_find,             TrivialSmall, TrivialMedium, TrivialLarge>();
     bench_types<bench_number_crunching, TrivialSmall, TrivialMedium>();
 }
 

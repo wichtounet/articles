@@ -414,3 +414,99 @@ struct RandomSortedInsert {
 template<class Container> std::mt19937 RandomSortedInsert<Container>::generator;
 template<class Container> std::uniform_int_distribution<std::size_t> RandomSortedInsert<Container>::distribution(0, std::numeric_limits<std::size_t>::max() - 1);
 
+template<class Container>
+struct RandomErase1 {
+    static std::mt19937 generator;
+    static std::uniform_int_distribution<std::size_t> distribution;
+
+    inline static void run(Container &c, std::size_t /*size*/){
+        auto it = c.begin();
+
+        while(it != c.end()){
+            if(distribution(generator) > 9900){
+                it = c.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+};
+
+template<class Container> std::mt19937 RandomErase1<Container>::generator;
+template<class Container> std::uniform_int_distribution<std::size_t> RandomErase1<Container>::distribution(0, 10000);
+
+template<class Container>
+struct RandomErase10 {
+    static std::mt19937 generator;
+    static std::uniform_int_distribution<std::size_t> distribution;
+
+    inline static void run(Container &c, std::size_t /*size*/){
+        auto it = c.begin();
+
+        while(it != c.end()){
+            if(distribution(generator) > 9000){
+                it = c.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+};
+
+template<class Container> std::mt19937 RandomErase10<Container>::generator;
+template<class Container> std::uniform_int_distribution<std::size_t> RandomErase10<Container>::distribution(0, 10000);
+
+template<class Container>
+struct RandomErase25 {
+    static std::mt19937 generator;
+    static std::uniform_int_distribution<std::size_t> distribution;
+
+    inline static void run(Container &c, std::size_t /*size*/){
+        auto it = c.begin();
+
+        while(it != c.end()){
+            if(distribution(generator) > 7500){
+                it = c.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+};
+
+template<class Container> std::mt19937 RandomErase25<Container>::generator;
+template<class Container> std::uniform_int_distribution<std::size_t> RandomErase25<Container>::distribution(0, 10000);
+
+template<class Container>
+struct RandomErase50 {
+    static std::mt19937 generator;
+    static std::uniform_int_distribution<std::size_t> distribution;
+
+    inline static void run(Container &c, std::size_t /*size*/){
+        auto it = c.begin();
+
+        while(it != c.end()){
+            if(distribution(generator) > 5000){
+                it = c.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+};
+
+template<class Container> std::mt19937 RandomErase50<Container>::generator;
+template<class Container> std::uniform_int_distribution<std::size_t> RandomErase50<Container>::distribution(0, 10000);
+
+// Note: This is probably erased completely for a vector
+template<class Container>
+struct Traversal {
+    inline static void run(Container &c, std::size_t size){
+        auto it = c.begin();
+        auto end = c.end();
+
+        while(it != end){
+            ++it;
+        }
+    }
+};
