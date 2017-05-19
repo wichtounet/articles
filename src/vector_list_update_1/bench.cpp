@@ -16,6 +16,8 @@
 #include <cstdint>
 #include <typeinfo>
 #include <memory>
+#include <set>
+#include <unordered_set>
 
 #include "plf_colony.h"
 
@@ -170,8 +172,6 @@ struct bench_fill_back {
         bench<plf::colony<T>, microseconds, Empty, ReserveSize, InsertSimple>("colony_reserve", sizes);
     }
 };
-
-//TODO Add multiset to the benchmarks
 
 template<typename T>
 struct bench_emplace_back {
