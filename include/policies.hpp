@@ -361,9 +361,23 @@ struct Sort<std::list<T> > {
 };
 
 template<class T>
+struct Sort<plf::colony<T> > {
+    inline static void run(plf::colony<T> &c, std::size_t){
+        c.sort();
+    }
+};
+
+template<class T>
 struct Sort<boost::intrusive::list<T, boost::intrusive::constant_time_size<false>>> {
     inline static void run(boost::intrusive::list<T, boost::intrusive::constant_time_size<false>>& c, std::size_t){
         c.sort();
+    }
+};
+
+template<class Container>
+struct TimSort {
+    inline static void run(Container &c, std::size_t){
+        c.timsort();
     }
 };
 

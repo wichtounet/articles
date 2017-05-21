@@ -19,6 +19,7 @@
 #include <set>
 #include <unordered_set>
 
+#include "plf_timsort.h"
 #include "plf_colony.h"
 
 #include "bench.hpp"
@@ -271,7 +272,8 @@ struct bench_sort {
         bench<std::vector<T>, milliseconds, FilledRandom, Sort>("vector", sizes);
         bench<std::list<T>,   milliseconds, FilledRandom, Sort>("list",   sizes);
         bench<std::deque<T>,  milliseconds, FilledRandom, Sort>("deque",  sizes);
-        // colony is unordered
+        bench<plf::colony<T>,  milliseconds, FilledRandomInsert, Sort>("colony",  sizes);
+        bench<plf::colony<T>,  milliseconds, FilledRandomInsert, TimSort>("colony_timsort",  sizes);
     }
 };
 
@@ -396,20 +398,20 @@ struct bench_find {
 
 template<typename ...Types>
 void bench_all(){
-    bench_types<bench_fill_back,        Types...>();
-    bench_types<bench_emplace_back,     Types...>();
-    bench_types<bench_fill_front,       Types...>();
-    bench_types<bench_emplace_front,    Types...>();
-    bench_types<bench_linear_search,    Types...>();
-    bench_types<bench_random_insert,    Types...>();
-    bench_types<bench_random_remove,    Types...>();
+    //bench_types<bench_fill_back,        Types...>();
+    //bench_types<bench_emplace_back,     Types...>();
+    //bench_types<bench_fill_front,       Types...>();
+    //bench_types<bench_emplace_front,    Types...>();
+    //bench_types<bench_linear_search,    Types...>();
+    //bench_types<bench_random_insert,    Types...>();
+    //bench_types<bench_random_remove,    Types...>();
     bench_types<bench_sort,             Types...>();
-    bench_types<bench_destruction,      Types...>();
-    bench_types<bench_erase_1,          Types...>();
-    bench_types<bench_erase_10,         Types...>();
-    bench_types<bench_erase_25,         Types...>();
-    bench_types<bench_erase_50,         Types...>();
-    bench_types<bench_write,            Types...>();
+    //bench_types<bench_destruction,      Types...>();
+    //bench_types<bench_erase_1,          Types...>();
+    //bench_types<bench_erase_10,         Types...>();
+    //bench_types<bench_erase_25,         Types...>();
+    //bench_types<bench_erase_50,         Types...>();
+    //bench_types<bench_write,            Types...>();
 
     // The following are really slow so run only for limited set of data
     bench_types<bench_find,             TrivialSmall, TrivialMedium, TrivialLarge>();
