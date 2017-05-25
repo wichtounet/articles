@@ -97,7 +97,7 @@ void graphs::output(Output output){
                  << "var options = {curveType: \"function\","
                  << "title: \"" << graph->title << "\","
                  << "animation: {duration:1200, easing:\"in\"},"
-                 << "width: 600, height: 400,"
+                 << "width: 700, height: 400,"
                  << "hAxis: {title:\"Number of elements\", slantedText:true},"
                  << "vAxis: {viewWindow: {min:0}, title:\"" << graph->unit << "\"}};" << std::endl
                  << "graph.draw(data, options);" << std::endl;
@@ -130,7 +130,7 @@ void graphs::output(Output output){
 
         //And in the web page bind them
         for(auto& graph : all_graphs){
-            file << "<div id=\"graph_" << graph->name << "\" style=\"width: 600px; height: 400px;\"></div>" << std::endl;
+            file << "<div id=\"graph_" << graph->name << "\" style=\"width: 700px; height: 400px;\"></div>" << std::endl;
             file << "<input id=\"graph_button_" << graph->name << "\" type=\"button\" value=\"Logarithmic scale\">" << std::endl;
         }
 
@@ -143,7 +143,7 @@ void graphs::output(Output output){
 
         //One function to rule them all
         for(auto& graph : all_graphs){
-            file << "[line_chart width=\"600px\" height=\"400px\" scale_button=\"true\" title=\"" << graph->title
+            file << "[line_chart width=\"700px\" height=\"400px\" scale_button=\"true\" title=\"" << graph->title
                 << "\" h_title=\"Number of elements\" v_title=\"" << graph->unit << "\"]" << std::endl;
 
             //['x', 'Cats', 'Blanket 1', 'Blanket 2'],

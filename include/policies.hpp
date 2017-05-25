@@ -277,13 +277,19 @@ struct EmplaceFront<std::vector<T> > {
 
 template<class Container>
 struct Find {
+    static size_t X;
     inline static void run(Container &c, std::size_t size){
         for(std::size_t i=0; i<size; ++i) {
             // hand written comparison to eliminate temporary object creation
-            std::find_if(std::begin(c), std::end(c), [&](decltype(*std::begin(c)) v){ return v.a == i; });
+            if(std::find_if(std::begin(c), std::end(c), [&](decltype(*std::begin(c)) v){ return v.a == i; }) == std::end(c)){
+                ++X;
+            }
         }
     }
 };
+
+template<class Container>
+size_t Find<Container>::X = 0;
 
 template<class Container>
 struct Insert {
@@ -337,10 +343,8 @@ struct Erase {
 template<class Container>
 struct RemoveErase {
     inline static void run(Container &c, std::size_t){
-        for(std::size_t i=0; i<1000; ++i) {
-            // hand written comparison to eliminate temporary object creation
-            c.erase(std::remove_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a == i; }), end(c));
-        }
+        // hand written comparison to eliminate temporary object creation
+        c.erase(std::remove_if(begin(c), end(c), [&](decltype(*begin(c)) v){ return v.a < 1000; }), end(c));
     }
 };
 
@@ -443,6 +447,8 @@ struct RandomErase1 {
                 ++it;
             }
         }
+
+        std::cout << c.size() << std::endl;
     }
 };
 
