@@ -23,6 +23,7 @@ $(eval $(call src_folder_compile,/threads/part1))
 $(eval $(call src_folder_compile,/threads/part2))
 $(eval $(call src_folder_compile,/threads/part3))
 $(eval $(call src_folder_compile,/threads/part4))
+$(eval $(call src_folder_compile,/threads/part5))
 $(eval $(call src_folder_compile,/vector_list))
 $(eval $(call src_folder_compile,/vector_list_update_1,-Iplf_colony_alpha))
 $(eval $(call src_folder_compile,/sqrt))
@@ -52,6 +53,11 @@ $(eval $(call add_src_executable,threads_p3_call_once,threads/part3/call_once.cp
 $(eval $(call add_src_executable,threads_p3_condition_variables,threads/part3/condition_variables.cpp,-pthread))
 
 $(eval $(call add_src_executable,threads_p4_atomic_counter,threads/part4/AtomicCounter.cpp,-pthread))
+
+$(eval $(call add_src_executable,threads_p5_futures,threads/part5/futures.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p5_futures_ret,threads/part5/futures_ret.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p5_futures_wait_for,threads/part5/futures_wait_for.cpp,-pthread))
+$(eval $(call add_src_executable,threads_p5_futures_loop,threads/part5/futures_loop.cpp,-pthread))
 
 $(eval $(call add_src_executable,threads_bench,threads/benchmark/bench.cpp,-pthread))
 
