@@ -61,6 +61,8 @@ $(eval $(call add_src_executable,threads_p5_futures_loop,threads/part5/futures_l
 
 $(eval $(call add_src_executable,threads_bench,threads/benchmark/bench.cpp,-pthread))
 
+$(eval $(call add_src_executable,bench_pow,bench_pow.cpp))
+
 $(eval $(call add_src_executable,linear_sorting,linear_sorting/bench.cpp))
 
 $(eval $(call add_src_executable,boost_po_v1,boost_po/v1.cpp,-lboost_program_options))
