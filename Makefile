@@ -10,6 +10,8 @@ SQRT_VALUE=5000000
 WARNING_FLAGS += -Wno-missing-field-initializers
 CXX_FLAGS += -DSQRT_VALUE=$(SQRT_VALUE) -ICatch/include
 
+$(eval $(call use_cpp11))
+
 ifneq (,$(CLANG_USE_LIBCXX))
 $(eval $(call use_libcxx))
 endif
