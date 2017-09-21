@@ -171,8 +171,8 @@ struct bench_fill_back {
 
         bench<std::vector<T>, microseconds, Empty, ReserveSize, FillBack>("vector_reserve", sizes);
 
-        //bench<plf::colony<T>, microseconds, Empty, InsertSimple>("colony",  sizes);
-        //bench<plf::colony<T>, microseconds, Empty, ReserveSize, InsertSimple>("colony_reserve", sizes);
+        bench<plf::colony<T>, microseconds, Empty, InsertSimple>("colony",  sizes);
+        bench<plf::colony<T>, microseconds, Empty, ReserveSize, InsertSimple>("colony_reserve", sizes);
 
         bench<plf::colony<T,std::allocator<T>, unsigned int>, microseconds, Empty, InsertSimple>("colony",  sizes);
         bench<plf::colony<T,std::allocator<T>, unsigned int>, microseconds, Empty, ReserveSize, InsertSimple>("colony_reserve", sizes);
@@ -410,23 +410,23 @@ struct bench_find {
 template<typename ...Types>
 void bench_all(){
     bench_types<bench_fill_back,        Types...>();
-    //bench_types<bench_emplace_back,     Types...>();
-    //bench_types<bench_fill_front,       Types...>();
-    //bench_types<bench_emplace_front,    Types...>();
-    //bench_types<bench_linear_search,    Types...>();
-    //bench_types<bench_write,            Types...>();
-    //bench_types<bench_random_insert,    Types...>();
-    //bench_types<bench_random_remove,    Types...>();
-    //bench_types<bench_sort,             Types...>();
-    //bench_types<bench_destruction,      Types...>();
-    //bench_types<bench_erase_1,          Types...>();
-    //bench_types<bench_erase_10,         Types...>();
-    //bench_types<bench_erase_25,         Types...>();
-    //bench_types<bench_erase_50,         Types...>();
+    bench_types<bench_emplace_back,     Types...>();
+    bench_types<bench_fill_front,       Types...>();
+    bench_types<bench_emplace_front,    Types...>();
+    bench_types<bench_linear_search,    Types...>();
+    bench_types<bench_write,            Types...>();
+    bench_types<bench_random_insert,    Types...>();
+    bench_types<bench_random_remove,    Types...>();
+    bench_types<bench_sort,             Types...>();
+    bench_types<bench_destruction,      Types...>();
+    bench_types<bench_erase_1,          Types...>();
+    bench_types<bench_erase_10,         Types...>();
+    bench_types<bench_erase_25,         Types...>();
+    bench_types<bench_erase_50,         Types...>();
 
-    //// The following are really slow so run only for limited set of data
-     //bench_types<bench_find,             TrivialSmall, TrivialMedium, TrivialLarge>();
-     //bench_types<bench_number_crunching, TrivialSmall, TrivialMedium>();
+    // The following are really slow so run only for limited set of data
+    bench_types<bench_find,             TrivialSmall, TrivialMedium, TrivialLarge>();
+    bench_types<bench_number_crunching, TrivialSmall, TrivialMedium>();
 }
 
 int main(){
