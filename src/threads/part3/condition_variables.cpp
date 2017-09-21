@@ -41,6 +41,7 @@ struct BoundedBuffer {
         rear = (rear + 1) % capacity;
         ++count;
 
+        l.unlock();
         not_empty.notify_one();
     }
 
@@ -53,6 +54,7 @@ struct BoundedBuffer {
         front = (front + 1) % capacity;
         --count;
 
+        l.unlock();
         not_full.notify_one();
 
         return result;
