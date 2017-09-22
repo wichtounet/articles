@@ -65,6 +65,7 @@ $(eval $(call add_src_executable,threads_bench,threads/benchmark/bench.cpp,-pthr
 
 $(eval $(call add_src_executable,bench_pow_float,bench_pow_float.cpp))
 $(eval $(call add_src_executable,bench_pow_double,bench_pow_double.cpp))
+$(eval $(call add_src_executable,bench_pow_my_pow,bench_pow_my_pow.cpp))
 
 $(eval $(call add_src_executable,linear_sorting,linear_sorting/bench.cpp))
 
