@@ -15,7 +15,7 @@ auto old_mul(){
 
 template<typename T1, typename... T>
 auto old_mul(T1 s, T... ts){
-    return s + old_sum(ts...);;
+    return s + old_mul(ts...);;
 }
 
 template<typename... T>
@@ -65,7 +65,7 @@ int main(){
     std::cout << fold_sum_2(1, 2, 3, 4, 5) << std::endl;
     std::cout << fold_sum_1() << std::endl;
     std::cout << fold_sum_2() << std::endl;
-    
+
     std::cout << old_mul(1, 2, 3, 4, 5) << std::endl;
     std::cout << old_mul() << std::endl;
 
