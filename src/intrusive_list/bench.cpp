@@ -17,6 +17,9 @@
 
 #include <boost/intrusive/list.hpp>
 
+#include "plf_timsort.h"
+#include "plf_colony.h"
+
 #include "bench.hpp"
 #include "policies.hpp"
 

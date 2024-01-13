@@ -18,7 +18,7 @@ endif
 
 $(eval $(call src_folder_compile,))
 $(eval $(call src_folder_compile,/boost_po))
-$(eval $(call src_folder_compile,/intrusive_list))
+$(eval $(call src_folder_compile,/intrusive_list,-Iplf_colony_alpha))
 $(eval $(call src_folder_compile,/linear_sorting))
 $(eval $(call src_folder_compile,/threads/benchmark))
 $(eval $(call src_folder_compile,/threads/part1))
