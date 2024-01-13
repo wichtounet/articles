@@ -120,7 +120,8 @@ std::vector<typename Container::value_type> FilledRandomInsert<Container>::v;
 template<class Container>
 struct SmartFilled {
     inline static std::unique_ptr<Container> make(std::size_t size){
-        return std::unique_ptr<Container>(new Container(size, typename Container::value_type()));
+        typename Container::value_type value{};
+        return std::unique_ptr<Container>(new Container(size, value));
     }
 
     inline static void clean(){}
