@@ -30,8 +30,8 @@ struct Normal {
     std::size_t a;
     std::array<unsigned char, Size-sizeof(a)> b;
 
-    Normal<Size>(){}
-    Normal<Size>(std::size_t a) : a(a) {}
+    Normal(){}
+    Normal(std::size_t a) : a(a) {}
 
     friend bool operator<(const Normal<Size>& s1, const Normal<Size>& s2){ return s1.a < s2.a; }
 };
